@@ -221,6 +221,7 @@
 
     <div class="top-app-title">🚀 টাকা ইনকাম সেন্টার 🚀</div>
 
+    <!-- হোম পেজ -->
     <div id="page-home" class="page active">
         <div class="balance-card">
             <div class="balance-title">মোট ব্যালেন্স</div>
@@ -258,6 +259,7 @@
         </div>
     </div>
 
+    <!-- কাজ পেজ -->
     <div id="page-work" class="page">
         <div class="card">
             <h3>📺 ভিডিও বিজ্ঞাপন টাস্ক</h3>
@@ -267,19 +269,17 @@
             
             <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
             
-            <p><b>অফিসিয়াল চ্যানেলে জয়েন করুন:</b></p>
-            <a href="https://t.me/ad16269" target="_blank" style="text-decoration: none;">
-                <button class="btn-action" style="background-color: #0284c7; margin-bottom: 8px;">📢 জয়েন করুন: চ্যানেল ১</button>
-            </a>
-            <a href="https://t.me/AK26269" target="_blank" style="text-decoration: none;">
-                <button class="btn-action" style="background-color: #0284c7; margin-bottom: 8px;">📢 জয়েন করুন: চ্যানেল ২</button>
-            </a>
-            <a href="https://youtube.com/@ad16269a?si=a2G48AqOuEGBjj5v" target="_blank" style="text-decoration: none;">
-                <button class="btn-action" style="background-color: #ef4444;">📺 সাবস্ক্রাইব করুন: ইউটিউব</button>
-            </a>
+            <p><b>অফিসিয়াল চ্যানেলে জয়েন করুন (প্রতিটিতে ৳৫০ বোনাস):</b></p>
+            
+            <button class="btn-action" id="btn-chan1" onclick="claimChannelBonus('chan1', 'https://t.me/ad16269')" style="background-color: #0284c7; margin-bottom: 8px;">📢 জয়েন করুন: চ্যানেল ১</button>
+            
+            <button class="btn-action" id="btn-chan2" onclick="claimChannelBonus('chan2', 'https://t.me/AK26269')" style="background-color: #0284c7; margin-bottom: 8px;">📢 জয়েন করুন: চ্যানেল ২</button>
+            
+            <button class="btn-action" id="btn-yt" onclick="claimChannelBonus('yt', 'https://youtube.com/@ad16269a?si=a2G48AqOuEGBjj5v')" style="background-color: #ef4444;">📺 সাবস্ক্রাইব করুন: ইউটিউব</button>
         </div>
     </div>
 
+    <!-- ভিডিও এড মডাল -->
     <div id="adModal" class="ad-modal">
         <div class="ad-modal-content">
             <div id="closeAdBtn" class="ad-close-btn" onclick="claimAdReward()">✕</div>
@@ -290,6 +290,7 @@
         </div>
     </div>
 
+    <!-- সাপোর্ট পেজ -->
     <div id="page-support" class="page">
         <div class="card">
             <h3>🎧 কাস্টমার সাপোর্ট</h3>
@@ -305,9 +306,11 @@
         </div>
     </div>
 
+    <!-- রেফার পেজ -->
     <div id="page-refer" class="page">
         <div class="card">
             <h3>👥 বন্ধুকে রেফার করুন</h3>
+            <!-- রেফার বোনাস ১১১ টাকা করা হয়েছে -->
             <p>প্রতিটি সফল রেফারে আপনি পাবেন <b style="color: #10b981;">৳ ১১১.০০</b> বোনাস!</p>
             
             <input type="text" class="input-field" id="refer-link" value="https://t.me/TakaInkam1626_bot?start=user123" readonly>
@@ -315,6 +318,7 @@
         </div>
     </div>
 
+    <!-- ওয়ালেট পেজ -->
     <div id="page-wallet" class="page">
         <div class="card">
             <h3>💳 টাকা উত্তোলন (Withdraw)</h3>
@@ -336,6 +340,7 @@
         </div>
     </div>
 
+    <!-- নেভিগেশন বার -->
     <div class="nav-bar">
         <div class="nav-item active" onclick="switchPage('home', this)">
             <div class="nav-icon">🏠</div><div>হোম</div>
@@ -382,7 +387,29 @@
                     updateUI(false);
                 });
             }
+            
+            // বোনাস বাটন স্ট্যাটাস চেক করা
+            checkBonusStatus();
             updateUI(false);
+        }
+
+        // বাটন স্ট্যাটাস চেক করা (যাতে পেজ রিলোড হলেও বোতামের অবস্থা ঠিক থাকে)
+        function checkBonusStatus() {
+            if (localStorage.getItem('bonus_chan1') === 'true') {
+                let btn = document.getElementById('btn-chan1');
+                btn.style.opacity = "0.5";
+                btn.innerText = "✅ বোনাস গৃহীত: চ্যানেল ১";
+            }
+            if (localStorage.getItem('bonus_chan2') === 'true') {
+                let btn = document.getElementById('btn-chan2');
+                btn.style.opacity = "0.5";
+                btn.innerText = "✅ বোনাস গৃহীত: চ্যানেল ২";
+            }
+            if (localStorage.getItem('bonus_yt') === 'true') {
+                let btn = document.getElementById('btn-yt');
+                btn.style.opacity = "0.5";
+                btn.innerText = "✅ বোনাস গৃহীত: ইউটিউব";
+            }
         }
 
         function saveAllData() {
@@ -395,6 +422,28 @@
                 tg.CloudStorage.setItem('totalTasks', totalTasks.toString());
                 tg.CloudStorage.setItem('totalRefers', totalRefers.toString());
             }
+        }
+
+        // 🎁 চ্যানেল জয়েন বোনাস ফাংশন
+        function claimChannelBonus(id, url) {
+            if (localStorage.getItem('bonus_' + id) === 'true') {
+                tg.showAlert("⚠️ আপনি ইতিমধ্যেই এই বোনাসটি গ্রহণ করেছেন!");
+                window.open(url, '_blank');
+                return;
+            }
+            
+            userBalance += 50; // ৫০ টাকা বোনাস
+            localStorage.setItem('bonus_' + id, 'true');
+            
+            let btn = document.getElementById('btn-' + id);
+            btn.style.opacity = "0.5";
+            if(id === 'chan1') btn.innerText = "✅ বোনাস গৃহীত: চ্যানেল ১";
+            if(id === 'chan2') btn.innerText = "✅ বোনাস গৃহীত: চ্যানেল ২";
+            if(id === 'yt') btn.innerText = "✅ বোনাস গৃহীত: ইউটিউব";
+            
+            updateUI(true);
+            tg.showAlert("🎉 অভিনন্দন! চ্যানেলে জয়েন করার জন্য আপনি ৫০ টাকা বোনাস পেয়েছেন।");
+            window.open(url, '_blank');
         }
 
         setInterval(() => {
@@ -463,39 +512,4 @@
 
         function claimAdReward() {
             document.getElementById("adModal").style.display = "none";
-            userBalance += 10;
-            totalTasks += 1;
-            updateUI(true);
-            tg.showAlert("✅ অভিনন্দন! ১৫ সেকেন্ড সফলভাবে দেখার জন্য আপনি ১০ টাকা পেয়েছেন।");
-        }
-
-        function copyRefer() {
-            const copyText = document.getElementById("refer-link");
-            copyText.select();
-            navigator.clipboard.writeText(copyText.value);
-            tg.showAlert("আপনার রেফার লিংক কপি হয়েছে!");
-        }
-
-        function processWithdraw() {
-            const number = document.getElementById('withdraw-number').value;
-            const amount = parseFloat(document.getElementById('withdraw-amount').value);
-            if (!number || !amount) { tg.showAlert("অনুগ্রহ করে সঠিক তথ্য দিন।"); return; }
-            if (amount < 500) { tg.showAlert("⚠️ সর্বনিম্ন ৫০০ টাকা উত্তোলন করতে পারবেন।"); return; }
-            if (amount > userBalance) { tg.showAlert("⚠️ আপনার ওয়ালেটে পর্যাপ্ত ব্যালেন্স নেই।"); return; }
-            if (totalRefers < 11) {
-                tg.showPopup({
-                    title: 'রেফার কমপ্লিট হয়নি',
-                    message: '⚠️ টাকা উইথড্রিতে ১১ টা রেফার কমপ্লিট করুন।',
-                    buttons: [{id: 'cancel', type: 'cancel', text: 'বন্ধ করুন'}]
-                });
-                return;
-            }
-            userBalance -= amount;
-            updateUI(true);
-            tg.showAlert(`✅ আপনার ৳${amount} উত্তোলনের অনুরোধটি সফল হয়েছে।`);
-        }
-
-        loadAllData();
-    </script>
-</body>
-</html>
+            userBalanc
