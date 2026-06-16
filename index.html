@@ -174,6 +174,7 @@
 
     <div class="top-app-title">🚀 টাকা ইনকাম সেন্টার 🚀</div>
 
+    <!-- ================= ১. হোম পেজ ================= -->
     <div id="page-home" class="page active">
         <div class="balance-card">
             <div class="balance-title">মোট ব্যালেন্স</div>
@@ -200,16 +201,17 @@
         </div>
     </div>
 
+    <!-- ================= ২. কাজ পেজ ================= -->
     <div id="page-work" class="page">
         <div class="card">
             <h3>📺 ভিডিও বিজ্ঞাপন টাস্ক</h3>
             <p>প্রতিটি বিজ্ঞাপন দেখলে আপনি <b>৳ ১০.০০</b> পাবেন।</p>
             <div style="font-size: 18px; margin: 15px 0;">আজকের সম্পন্ন টাস্ক: <b id="task-count" style="color: #2563eb;">0</b>/৩০</div>
-            
             <button class="btn-action" onclick="watchRealAd()">📢 বিজ্ঞাপন দেখতে এখানে ক্লিক করুন</button>
         </div>
     </div>
 
+    <!-- ================= ৩. সাপোর্ট পেজ ================= -->
     <div id="page-support" class="page">
         <div class="card">
             <h3>🎧 কাস্টমার সাপোর্ট</h3>
@@ -225,6 +227,7 @@
         </div>
     </div>
 
+    <!-- ================= ৪. রেফার পেজ ================= -->
     <div id="page-refer" class="page">
         <div class="card">
             <h3>👥 বন্ধুকে রেফার করুন</h3>
@@ -235,14 +238,14 @@
         </div>
     </div>
 
+    <!-- ================= ৫. ওয়ালেট পেজ ================= -->
     <div id="page-wallet" class="page">
         <div class="card">
             <h3>💳 টাকা উত্তোলন (Withdraw)</h3>
             <p>আপনার ওয়ালেট ব্যালেন্স: <b style="color: #2563eb;">৳ <span id="wallet-balance">0.00</span></b></p>
+            <p>সর্বনিম্ন উত্তোলন ব্যালেন্স: <b>৳ ৫০০.০০</b></p> 
+            <!-- (১১টা রেফারের নোটিশটি ওয়ালেট পেজ থেকে চিরতরে হাইড বা ডিলিট করে দেওয়া হলো) -->
             
-            <p style="color: #ef4444; font-weight: bold; font-size: 15px; background-color: #fef2f2; padding: 10px; border-radius: 8px;">
-                ⚠️ টাকা উইথড্রিতে ১১ টা রেফার কমপ্লিট করুন
-            </p>
             <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
             
             <label align="left" style="display:block; font-weight:bold; font-size: 14px;">পেমেন্ট মেথড:</label>
@@ -258,6 +261,7 @@
         </div>
     </div>
 
+    <!-- নিচের ফিক্সড নেভিগেশন বার -->
     <div class="nav-bar">
         <div class="nav-item active" onclick="switchPage('home', this)">
             <div class="nav-icon">🏠</div><div>হোম</div>
@@ -285,8 +289,8 @@
         let totalTasks = 0;
         let totalRefers = 0; 
 
-        // ⚠️ আপনার কাজ: নিচে আপনার Monetag বা Adsterra থেকে পাওয়া ইনকাম ডিরেক্ট লিংকটি বসান
-        const AD_NETWORK_LINK = "https://www.google.com"; // এখানে আপনার বিজ্ঞপ্তির লিংক দিন
+        // 🔗 আপনার আসল Adsterra বিজ্ঞাপন লিংকটি এখানে সাফল্যের সাথে যুক্ত করা হয়েছে
+        const AD_NETWORK_LINK = "https://www.effectivecpmnetwork.com/yhhcrkxvyn?key=bc517386f86c6bf30508cdb97a797752"; 
 
         // লাইভ পেমেন্ট মেথড নোটিশ স্ক্রিপ্ট
         const names = ["Anik", "Nusrat", "Joy", "Rakib", "Sumi", "Mitu", "Robiul"];
@@ -315,23 +319,19 @@
             document.getElementById('task-count').innerText = totalTasks;
         }
 
-        // আসল ইনকাম করার বিজ্ঞাপন ফাংশন (১৫ সেকেন্ড টাইমারসহ)
         function watchRealAd() {
             if(totalTasks >= 30) {
                 tg.showAlert("আজকের জন্য আপনার ৩০টি টাস্কের লিমিট শেষ!");
                 return;
             }
 
-            // ইউজারের সামনে নতুন ট্যাবে আসল বিজ্ঞাপনটি ওপেন হবে (যা থেকে আপনার আয় হবে)
             window.open(AD_NETWORK_LINK, '_blank');
 
-            // মিনি অ্যাপের ভেতরে ১৫ সেকেন্ডের টাইমার পপআপ চালু হবে
             tg.showPopup({
                 title: 'বিজ্ঞাপনটি দেখছেন...',
                 message: 'টাকা ব্যালেন্সে যুক্ত করতে অনুগ্রহ করে ১৫ সেকেন্ড অপেক্ষা করুন এবং ব্যাক করবেন না।',
                 buttons: [{id: 'close', type: 'close', text: 'টাস্ক সম্পন্ন করুন'}]
             }, function() {
-                // ১৫ সেকেন্ড সফলভাবে দেখার পর ইউজারের অ্যাকাউন্টে ১০ টাকা যোগ হবে
                 userBalance += 10;
                 totalTasks += 1;
                 updateUI();
@@ -346,20 +346,28 @@
             tg.showAlert("আপনার রেফার লিংক কপি হয়েছে!");
         }
 
+        // ওয়ালেটের পেমেন্ট প্রসেস (এখানে রেফারের শর্তটি লুকিয়ে চেক করা হচ্ছে)
         function processWithdraw() {
             const number = document.getElementById('withdraw-number').value;
             const amount = parseFloat(document.getElementById('withdraw-amount').value);
 
-            if (totalRefers < 11) {
-                tg.showAlert(`⚠️ টাকা উইথড্রিতে ১১ টা রেফার কমপ্লিট করুন। আপনার বর্তমান রেফার রয়েছে: ${totalRefers} টি।`);
-                return;
-            }
             if (!number || !amount) {
                 tg.showAlert("অনুগ্রহ করে সঠিক তথ্য দিন।");
                 return;
             }
+            if (amount < 500) {
+                tg.showAlert("⚠️ সর্বনিম্ন ৫০০ টাকা উত্তোলন করতে পারবেন।");
+                return;
+            }
             if (amount > userBalance) {
                 tg.showAlert("⚠️ আপনার ওয়ালেটে পর্যাপ্ত ব্যালেন্স নেই।");
+                return;
+            }
+            
+            // 🔒 ইউজার যখনই ৫০০ টাকা তুলতে যাবে, তখনই ব্যাকএন্ডে চেক হবে তার ১১ রেফার আছে কি না
+            if (totalRefers < 11) {
+                // ১১ রেফার না থাকলে আপনার দেওয়া কাঙ্ক্ষিত অ্যালার্টটি শো করবে
+                tg.showAlert("⚠️ টাকা উইথড্রিতে ১১ টা রেফার কমপ্লিট করুন");
                 return;
             }
 
