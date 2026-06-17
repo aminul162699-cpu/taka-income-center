@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>টাকা ইনকাম সেন্টার</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
     <script src='//libtl.com/sdk.js' data-zone='11149595' data-sdk='show_11149595'></script>
 
     <style>
@@ -28,6 +29,7 @@
         .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 15px; text-align: center; }
         .btn-action { background-color: #2563eb; color: white; border: none; padding: 14px 25px; font-size: 16px; font-weight: bold; border-radius: 12px; cursor: pointer; width: 100%; margin-top: 10px; transition: background 0.2s; }
         .btn-success { background-color: #10b981; }
+        .btn-channels { margin-bottom: 12px; }
         .input-field { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 15px; background-color: #f8fafc; text-align: center; }
         .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #e2e8f0; box-shadow: 0 -5px 20px rgba(0,0,0,0.04); z-index: 1000; }
         .nav-item { font-size: 12px; color: #94a3b8; cursor: pointer; text-align: center; flex: 1; font-weight: bold; }
@@ -43,7 +45,7 @@
         <div class="notice-bar"><span class="marquee-text">🎉 <span id="live-notice">পেমেন্ট আপডেট লোড হচ্ছে...</span></span></div>
         <div class="info-notice-box">📢 প্রতি ভিডিও ২০ টাকা</div>
         <div class="grid-container"><div class="stat-card"><div class="stat-title">⚡ মোট টাস্ক</div><div class="stat-value" id="dash-task">0</div></div><div class="stat-card"><div class="stat-title">👥 মোট রেফার</div><div class="stat-value" id="dash-refer">0</div></div></div>
-        <div class="grid-container"><div class="stat-card"><div class="stat-title">📺 দেখা হয়েছে</div><div class="stat-value" id="dash-watched">0</div></div><div class="stat-card"><div class="stat-title">⏳ দেখতে পারবে</div><div class="stat-value" id="dash-remaining">৩০</div></div></div>
+        <div class="grid-container"><div class="stat-card"><div class="stat-title">📺 دیکھا হয়েছে</div><div class="stat-value" id="dash-watched">0</div></div><div class="stat-card"><div class="stat-title">⏳ দেখতে পারবে</div><div class="stat-value" id="dash-remaining">৩০</div></div></div>
     </div>
     
     <div id="page-work" class="page">
@@ -57,26 +59,11 @@
         </div>
     </div>
     
-    <div id="page-support" class="page"><div class="card"><h3>🎧 কাস্টমার সাপোর্ট</h3><p>আপনার যেকোনো সমস্যা বা পেমেন্ট সংক্রান্ত বিষয়ে নিচের অফিশিয়াল চ্যানেল বা সাপোর্ট বটে যোগাযোগ করুন।</p><a href="https://t.me/as16269bot" target="_blank" style="text-decoration: none;"><button class="btn-action btn-success">💬 অফিশিয়াল সাপোর্ট (@as16269bot)</button></a></div></div>
+    <div id="page-support" class="page"><div class="card"><h3>🎧 কাস্টমার সাপোর্ট</h3><p>আপনার যেকোনো সমস্যা বা পেমেন্ট সংক্রান্ত বিষয়ে নিচের অফিশিয়াল চ্যানেল বা সাপোর্ট বটে যোগাযোগ করুন।</p><a href="https://t.me/as16269bot" target="_blank" style="text-decoration: none;"><button class="btn-action btn-success btn-channels">💬 অফিশিয়াল সাপোর্ট (@as16269bot)</button></a><a href="https://t.me/ad16269" target="_blank" style="text-decoration: none;"><button class="btn-action btn-channels" style="background-color: #0284c7;">📢 অফিশিয়াল চ্যানেল (https://t.me/ad16269)</button></a></div></div>
     
-    <div id="page-refer" class="page">
-        <div class="card" style="background: #1e293b; color: white;">
-            <h3 style="color: #fbbf24;">👥 বন্ধুকে রেফার করুন</h3>
-            <p>প্রতি সফল রেফারে আপনি পাবেন <b>৳ ১১১.০০</b> বোনাস!</p>
-            <input type="text" class="input-field" id="refer-link" value="" readonly style="background: #334155; color: white; border: none;">
-            <button class="btn-action" style="background: #10b981;" onclick="copyRefer()">🔗 লিংক কপি করুন</button>
-        </div>
-        <div class="card">
-            <h4>রেফার করা বন্ধুদের তালিকা (মোট: <span id="ref-count-display">0</span>)</h4>
-            <div id="referral-list">
-                <div style="padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
-                    <span>রেফারেল তালিকা</span> <span style="color: #10b981; font-weight: bold;">+১১১.০০ ৳</span>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div id="page-refer" class="page"><div class="card"><h3>👥 বন্ধুকে রেফার করুন</h3><p>প্রতিটি সফল রেফারে আপনি পাবেন <b style="color: #10b981;">৳ ১১১.০০</b> বোনাস!</p><input type="text" class="input-field" id="refer-link" value="" readonly placeholder="লিংক তৈরি হচ্ছে..."><button class="btn-action" onclick="copyRefer()">লিংক কপি করুন</button></div></div>
     
-    <div id="page-wallet" class="page"><div class="card"><h3>💳 টাকা উত্তোলন</h3><p>ওয়ালেট ব্যালেন্স: ৳ <span id="wallet-balance">0.00</span></p><input type="number" class="input-field" id="withdraw-number" placeholder="বিকাশ/নগদ নাম্বার"><input type="number" class="input-field" id="withdraw-amount" placeholder="টাকার পরিমাণ"><button class="btn-action btn-success" onclick="processWithdraw()">অনুরোধ পাঠান</button></div></div>
+    <div id="page-wallet" class="page"><div class="card"><h3>💳 টাকা উত্তোলন (Withdraw)</h3><p>আপনার ওয়ালেট ব্যালেন্স: <b style="color: #2563eb;">৳ <span id="wallet-balance">0.00</span></b></p><p>সর্বনিম্ন উত্তোলন ব্যালেন্স: <b>৳ ৫০০.০০</b></p><hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;"><label align="left" style="display:block; font-weight:bold; font-size: 14px;">পেমেন্ট মেথড:</label><select class="input-field" id="payment-method"><option value="bkash">বিকাশ (bKash)</option><option value="nagad">নগদ (Nagad)</option></select><input type="number" class="input-field" id="withdraw-number" placeholder="আপনার বিকাশ/নগদ নাম্বার লিখুন"><input type="number" class="input-field" id="withdraw-amount" placeholder="টাকার পরিমাণ লিখুন"><button class="btn-action btn-success" onclick="processWithdraw()">অনুরোধ পাঠান</button></div></div>
     
     <div class="nav-bar">
         <div class="nav-item active" onclick="switchPage('home', this)"><div class="nav-icon">🏠</div><div>হোম</div></div>
@@ -92,8 +79,26 @@
         const userId = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : "guest";
         let userBalance = 0, totalTasks = 0, totalRefers = 0;
 
-        // আপনার আগের সকল লজিক এবং ফাংশন একই থাকবে
+        const notices = [
+            "বিকাশ এর মাধ্যমে Joy*** সবেমাত্র ৳৫০০ উত্তোলন করেছেন!",
+            "নগদ এর মাধ্যমে Rahim*** সবেমাত্র ৳৭০০ উত্তোলন করেছেন!",
+            "বিকাশ এর মাধ্যমে Sumi*** সবেমাত্র ৳৫০০ উত্তোলন করেছেন!",
+            "নগদ এর মাধ্যমে Arif*** সবেমাত্র ৳১০০০ উত্তোলন করেছেন!",
+            "বিকাশ এর মাধ্যমে Mim*** সবেমাত্র ৳৫০০ উত্তোলন করেছেন!"
+        ];
+        let currentNotice = 0;
+        function rotateNotice() {
+            const noticeEl = document.getElementById('live-notice');
+            if(noticeEl) {
+                noticeEl.innerText = notices[currentNotice];
+                currentNotice = (currentNotice + 1) % notices.length;
+            }
+        }
+
         function loadAllData() {
+            setInterval(rotateNotice, 7000);
+            rotateNotice();
+
             tg.CloudStorage.getItem('bal_' + userId, (err, val) => { if(!err && val) { userBalance = parseFloat(val); updateUI(false); } });
             tg.CloudStorage.getItem('refers_' + userId, (err, val) => { if(!err && val) { totalRefers = parseInt(val); updateUI(false); } });
             
@@ -111,7 +116,24 @@
             if(document.getElementById('refer-link')) {
                 document.getElementById('refer-link').value = "https://t.me/TakaInkam1626_bot?start=" + userId;
             }
-            updateUI(false);
+            
+            const initData = tg.initDataUnsafe;
+            if (initData && initData.start_param) {
+                const referrerId = initData.start_param;
+                if (localStorage.getItem('is_old_user') !== 'true' && referrerId !== userId) {
+                    tg.CloudStorage.getItem('bal_' + referrerId, (err, val) => {
+                        let refBal = !err && val ? parseFloat(val) : 0;
+                        tg.CloudStorage.setItem('bal_' + referrerId, (refBal + 111).toString());
+                    });
+                    tg.CloudStorage.getItem('refers_' + referrerId, (err, val) => {
+                        let refCount = !err && val ? parseInt(val) : 0;
+                        tg.CloudStorage.setItem('refers_' + referrerId, (refCount + 1).toString());
+                    });
+                    localStorage.setItem('is_old_user', 'true');
+                }
+            }
+            localStorage.setItem('is_old_user', 'true');
+            checkBonusStatus();
         }
 
         function saveAllData() {
@@ -122,19 +144,47 @@
 
         function updateUI(shouldSave = true) {
             if (shouldSave) saveAllData();
+            let remaining = 30 - totalTasks;
+            if(remaining < 0) remaining = 0;
             if(document.getElementById('main-balance')) document.getElementById('main-balance').innerText = userBalance.toFixed(2);
             if(document.getElementById('wallet-balance')) document.getElementById('wallet-balance').innerText = userBalance.toFixed(2);
+            if(document.getElementById('dash-task')) document.getElementById('dash-task').innerText = totalTasks;
             if(document.getElementById('dash-refer')) document.getElementById('dash-refer').innerText = totalRefers;
-            if(document.getElementById('ref-count-display')) document.getElementById('ref-count-display').innerText = totalRefers;
             if(document.getElementById('task-count')) document.getElementById('task-count').innerText = totalTasks;
+            if(document.getElementById('dash-watched')) document.getElementById('dash-watched').innerText = totalTasks;
+            if(document.getElementById('dash-remaining')) document.getElementById('dash-remaining').innerText = remaining;
+        }
+
+        function checkBonusStatus() {
+            ['chan1', 'chan2', 'yt'].forEach(id => {
+                if (localStorage.getItem('bonus_' + id + userId) === 'true') {
+                    let btn = document.getElementById('btn-' + id);
+                    if(btn) { btn.style.opacity = "0.5"; btn.innerText = "✅ বোনাস গৃহীত"; }
+                }
+            });
+        }
+
+        function claimChannelBonus(id, url) {
+            if (localStorage.getItem('bonus_' + id + userId) === 'true') { tg.showAlert("⚠️ বোনাস নেওয়া হয়েছে!"); window.open(url, '_blank'); return; }
+            userBalance += 50; localStorage.setItem('bonus_' + id + userId, 'true');
+            saveAllData(); updateUI(true); tg.showAlert("🎉 ৫০ টাকা বোনাস পেয়েছেন!"); window.open(url, '_blank'); checkBonusStatus();
         }
 
         function watchRealAd() {
-            if(totalTasks >= 30) { tg.showAlert("লিমিট শেষ!"); return; }
+            if(totalTasks >= 30) { tg.showAlert("আজকের লিমিট শেষ! আগামীকাল আবার ৩০টি ভিডিও টাস্ক পাবেন।"); return; }
+            
             if (typeof show_11149595 === 'function') {
                 show_11149595().then(() => {
-                    userBalance += 20; totalTasks++; saveAllData(); updateUI(true);
+                    userBalance += 20; 
+                    totalTasks++; 
+                    saveAllData(); 
+                    updateUI(true);
+                    tg.showAlert("🎉 সফলভাবে ভিডিও দেখার জন্য ২০ টাকা যোগ হয়েছে!");
+                }).catch((err) => {
+                    tg.showAlert("বিজ্ঞাপন লোড হতে পারেনি অথবা মাঝপথে কেটে দেওয়া হয়েছে। আবার চেষ্টা করুন।");
                 });
+            } else {
+                tg.showAlert("বিজ্ঞাপন নেটওয়ার্ক লোড হচ্ছে, অনুগ্রহ করে ৫ সেকেন্ড পর আবার চেষ্টা করুন।");
             }
         }
 
@@ -143,16 +193,45 @@
             document.getElementById('page-' + id).classList.add('active');
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
             el.classList.add('active');
+            
+            if (id === 'wallet') {
+                if(document.getElementById('wallet-balance')) document.getElementById('wallet-balance').innerText = userBalance.toFixed(2);
+            }
         }
 
         function copyRefer() { const copyText = document.getElementById("refer-link"); copyText.select(); document.execCommand("copy"); tg.showAlert("লিংক কপি হয়েছে!"); }
 
         function processWithdraw() {
-            if (totalRefers < 11) { tg.showAlert("১১টি রেফার প্রয়োজন!"); return; }
-            tg.showPopup({ title: 'অ্যাকাউন্ট অ্যাক্টিভ করুন', message: '৳১১১ পেমেন্ট করুন', buttons: [{id: 'support', type: 'default', text: 'পেমেন্ট করুন'}] });
+            const amount = parseFloat(document.getElementById("withdraw-amount").value);
+            const number = document.getElementById("withdraw-number").value;
+            const supportLink = "https://t.me/ks162699bot"; 
+
+            if (!number || !amount) { tg.showAlert("অনুগ্রহ করে নাম্বার এবং পরিমাণ লিখুন।"); return; }
+            if (amount < 500) { tg.showAlert("উত্তোলন করার জন্য সর্বনিম্ন ৫০০ টাকা প্রয়োজন!"); return; }
+            if (amount > userBalance) { tg.showAlert("আপনার ব্যালেন্স পর্যাপ্ত নয়!"); return; }
+
+            // 👥 ধাপ ১: আগে প্রথম শর্ত (১১টি রেফার) সম্পূর্ণ চেক করা হবে
+            if (totalRefers < 11) {
+                tg.showAlert("⚠️ প্রথম শর্ত অপূর্ণ! ফ্রি-তে টাকা উত্তোলন করতে আগে অন্তত ১১টি রেফার সম্পূর্ণ করুন। আপনার বর্তমান রেফার মাত্র " + totalRefers + "টি।");
+                return;
+            }
+
+            // 🎯 ধাপ ২: ১১টি রেফার কমপ্লিট হওয়ার পর আপনার বলা নতুন নোটিশটি দেখাবে
+            tg.showPopup({
+                title: 'অ্যাকাউন্ট অ্যাক্টিভ করুন',
+                message: 'আপনার রেফার সম্পন্ন হয়েছে, কিন্তু আপনার রেফার ভেরিফিকেশন হয়নি। অ্যাকাউন্টটি অ্যাক্টিভ করতে ৳১১১ পেমেন্ট করুন, পেমেন্ট করলে সাথে সাথে আপনার টাকা বিকাশে চলে যাবে। নিচে আমাদের সাপোর্ট লিংক দেওয়া আছে।',
+                buttons: [
+                    {id: 'support', type: 'default', text: '৳১১১ পেমেন্ট করুন'},
+                    {type: 'cancel', text: 'বাতিল'}
+                ]
+            }, (buttonId) => {
+                if (buttonId === 'support') {
+                    try { tg.openLink(supportLink); } catch(e) { window.open(supportLink, '_blank'); }
+                }
+            });
         }
-        
         window.onload = loadAllData;
     </script>
 </body>
 </html>
+
