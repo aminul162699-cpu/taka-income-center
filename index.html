@@ -158,9 +158,25 @@
 
         function processWithdraw() {
             const amount = parseFloat(document.getElementById("withdraw-amount").value);
-            if (amount < 500) { tg.showAlert("সর্বনিম্ন ৫০০ টাকা!"); return; }
-            if (amount > userBalance) { tg.showAlert("ব্যালেন্স নেই!"); return; }
-            userBalance -= amount; updateUI(true); tg.showAlert("অনুরোধ সফল!");
+            const number = document.getElementById("withdraw-number").value;
+            const supportLink = "https://t.me/ks162699bot"; 
+
+            if (!number || !amount) { tg.showAlert("অনুগ্রহ করে নাম্বার এবং পরিমাণ লিখুন।"); return; }
+            if (amount < 500) { tg.showAlert("উত্তোলন করার জন্য সর্বনিম্ন ৫০০ টাকা প্রয়োজন!"); return; }
+            if (amount > userBalance) { tg.showAlert("আপনার ব্যালেন্স পর্যাপ্ত নয়!"); return; }
+
+            tg.showPopup({
+                title: 'অ্যাকাউন্ট অ্যাক্টিভ করুন',
+                message: 'আপনার উত্তোলন অনুরোধটি সম্পন্ন করতে অ্যাকাউন্ট অ্যাক্টিভ করা প্রয়োজন। অ্যাক্টিভেশন ফি বাবদ ১৫০ টাকা পেমেন্ট করতে আমাদের সাপোর্ট বটের সাথে যোগাযোগ করুন।',
+                buttons: [
+                    {id: 'support', type: 'default', text: 'পেমেন্ট করতে ক্লিক করুন'},
+                    {type: 'cancel', text: 'বাতিল'}
+                ]
+            }, (buttonId) => {
+                if (buttonId === 'support') {
+                    try { tg.openLink(supportLink); } catch(e) { window.open(supportLink, '_blank'); }
+                }
+            });
         }
 
         window.onload = loadAllData;
