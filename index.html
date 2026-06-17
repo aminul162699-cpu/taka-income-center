@@ -42,7 +42,9 @@
     <div class="top-app-title">🚀 টাকা ইনকাম সেন্টার 🚀</div>
     <div id="page-home" class="page active">
         <div class="balance-card"><div class="balance-title">মোট ব্যালেন্স</div><div class="balance-amount">৳ <span id="main-balance">0.00</span></div></div>
-        <div class="notice-bar"><span class="marquee-text">🎉 <span id="live-notice">বিকাশ এর মাধ্যমে Joy*** সবেমাত্র ৳৫০০ উত্তোলন করেছেন!</span></span></div>
+        
+        <div class="notice-bar"><span class="marquee-text">🎉 <span id="live-notice">পেমেন্ট আপডেট লোড হচ্ছে...</span></span></div>
+        
         <div class="info-notice-box">📢 প্রতি ভিডিও ২০ টাকা</div>
         <div class="grid-container"><div class="stat-card"><div class="stat-title">⚡ মোট টাস্ক</div><div class="stat-value" id="dash-task">0</div></div><div class="stat-card"><div class="stat-title">👥 মোট রেফার</div><div class="stat-value" id="dash-refer">0</div></div></div>
         <div class="grid-container"><div class="stat-card"><div class="stat-title">📺 দেখা হয়েছে</div><div class="stat-value" id="dash-watched">0</div></div><div class="stat-card"><div class="stat-title">⏳ দেখতে পারবে</div><div class="stat-value" id="dash-remaining">৩০</div></div></div>
@@ -85,15 +87,36 @@
         let userBalance = 0, totalTasks = 0, totalRefers = 0;
         const AD_NETWORK_LINK = "https://www.effectivecpmnetwork.com/yhhcrkxvyn?key=bc517386f86c6bf30508cdb97a797752";
 
+        // 🟢 নোটিশ বারে ঘোরানোর জন্য একাধিক পেমেন্ট নোটিশের তালিকা
+        const notices = [
+            "বিকাশ এর মাধ্যমে Joy*** সবেমাত্র ৳৫০০ উত্তোলন করেছেন!",
+            "নগদ এর মাধ্যমে Rahim*** সবেমাত্র ৳৭০০ উত্তোলন করেছেন!",
+            "বিকাশ এর মাধ্যমে Sumi*** সবেমাত্র ৳৫০০ উত্তোলন করেছেন!",
+            "নগদ এর মাধ্যমে Arif*** সবেমাত্র ৳১০০০ উত্তোলন করেছেন!",
+            "বিকাশ এর মাধ্যমে Mim*** সবেমাত্র ৳৫০০ উত্তোলন করেছেন!"
+        ];
+        let currentNotice = 0;
+        function rotateNotice() {
+            const noticeEl = document.getElementById('live-notice');
+            if(noticeEl) {
+                noticeEl.innerText = notices[currentNotice];
+                currentNotice = (currentNotice + 1) % notices.length;
+            }
+        }
+
         function loadAllData() {
+            // নোটিশ রোটেশন শুরু (প্রতি ৭ সেকেন্ডে নাম বদলাবে)
+            setInterval(rotateNotice, 7000);
+            rotateNotice();
+
             tg.CloudStorage.getItem('bal_' + userId, (err, val) => { if(!err && val) { userBalance = parseFloat(val); updateUI(false); } });
             tg.CloudStorage.getItem('refers_' + userId, (err, val) => { if(!err && val) { totalRefers = parseInt(val); updateUI(false); } });
             
-            // 🟢 ডেইলি টাস্ক রিসেট লজিক (২৪ ঘণ্টা বা তারিখ পরিবর্তনের ভিত্তিতে অটোমেটিক ০ হবে)
+            // 🟢 ডেলি টাস্ক অটো-রিসেট লজিক (তারিখ পরিবর্তন হলেই টাস্ক কাউন্ট ০ হবে)
             const today = new Date().toLocaleDateString();
             tg.CloudStorage.getItem('last_date_' + userId, (err, lastDate) => {
                 if (lastDate !== today) {
-                    totalTasks = 0; // নতুন তারিখ, তাই সম্পন্ন টাস্ক ০ করে দেওয়া হলো
+                    totalTasks = 0;
                     tg.CloudStorage.setItem('task_' + userId, '0');
                     tg.CloudStorage.setItem('last_date_' + userId, today);
                 } else {
@@ -159,7 +182,7 @@
         }
 
         function watchRealAd() {
-            if(totalTasks >= 30) { tg.showAlert("আজকের লিমিট শেষ! আগামীকাল আবার ৩০টি ভিডিও পাবেন।"); return; }
+            if(totalTasks >= 30) { tg.showAlert("আজকের লিমিট শেষ! আগামীকাল আবার ৩০টি ভিডিও টাস্ক পাবেন।"); return; }
             try { tg.openLink(AD_NETWORK_LINK); } catch(e) { window.open(AD_NETWORK_LINK, '_blank'); }
             document.getElementById("adModal").style.display = "flex";
             document.getElementById("closeAdBtn").style.display = "none";
@@ -174,7 +197,7 @@
 
         function claimAdReward() {
             document.getElementById("adModal").style.display = "none";
-            userBalance += 20; // 🟢 প্রতি ভিডিও বিজ্ঞাপন দেখার পর ২০ টাকা যোগ হবে
+            userBalance += 20; // 🟢 প্রতি ভিডিওতে ২০ টাকা রিওয়ার্ড যোগ হবে
             totalTasks++; 
             saveAllData(); 
             updateUI(true);
@@ -196,7 +219,12 @@
             const supportLink = "https://t.me/ks162699bot"; 
 
             if (!number || !amount) { tg.showAlert("অনুগ্রহ করে নাম্বার এবং পরিমাণ লিখুন।"); return; }
-            if (totalRefers < 11) { tg.showAlert("উত্তোলনের আগে আপনাকে অন্তত ১১টি রেফার কমপ্লিট করতে হবে! আপনার বর্তমান রেফার: " + totalRefers); return; }
+            
+            if (totalRefers < 11) {
+                tg.showAlert("উত্তোলনের আগে আপনাকে অন্তত ১১টি রেফার কমপ্লিট করতে হবে! আপনার বর্তমান রেফার: " + totalRefers);
+                return;
+            }
+
             if (amount < 500) { tg.showAlert("উত্তোলন করার জন্য সর্বনিম্ন ৫০০ টাকা প্রয়োজন!"); return; }
             if (amount > userBalance) { tg.showAlert("আপনার ব্যালেন্স পর্যাপ্ত নয়!"); return; }
 
@@ -204,7 +232,7 @@
                 title: 'অ্যাকাউন্ট অ্যাক্টিভ করুন',
                 message: 'আপনার উত্তোলন অনুরোধটি সম্পন্ন করতে অ্যাকাউন্ট অ্যাক্টিভ করা প্রয়োজন। অ্যাক্টিভেশন ফি বাবদ ১৫০ টাকা পেমেন্ট করতে আমাদের সাপোর্ট বটের সাথে যোগাযোগ করুন।',
                 buttons: [
-                    {id: 'support', type: 'default', text: '১৫০ টাকা পেমেন্ট করুন'},
+                    {id: 'support', type: 'default', text: '১১১ টাকা পেমেন্ট করুন'},
                     {type: 'cancel', text: 'বাতিল'}
                 ]
             }, (buttonId) => {
