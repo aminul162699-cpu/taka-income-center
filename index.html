@@ -79,27 +79,21 @@
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready(); tg.expand();
-        
-        // প্রতিটি ইউজারের জন্য ইউনিক আইডি
         const userId = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : "guest";
         let userBalance = 0, totalTasks = 0, totalRefers = 0;
         const AD_NETWORK_LINK = "https://www.effectivecpmnetwork.com/yhhcrkxvyn?key=bc517386f86c6bf30508cdb97a797752";
 
-        // ডাটা লোড করার লজিক (টেলিগ্রাম ক্লাউড স্টোরেজ)
         function loadAllData() {
-            tg.CloudStorage.getItem('bal_' + userId, (err, val) => {
-                if(!err && val) { userBalance = parseFloat(val); updateUI(false); }
-            });
-            tg.CloudStorage.getItem('task_' + userId, (err, val) => {
-                if(!err && val) { totalTasks = parseInt(val); updateUI(false); }
-            });
+            tg.CloudStorage.getItem('bal_' + userId, (err, val) => { if(!err && val) { userBalance = parseFloat(val); updateUI(false); } });
+            tg.CloudStorage.getItem('task_' + userId, (err, val) => { if(!err && val) { totalTasks = parseInt(val); updateUI(false); } });
+            totalRefers = parseInt(localStorage.getItem('refers_' + userId)) || 0;
             checkBonusStatus();
         }
 
-        // ডাটা সেভ করার লজিক
         function saveAllData() {
             tg.CloudStorage.setItem('bal_' + userId, userBalance.toString());
             tg.CloudStorage.setItem('task_' + userId, totalTasks.toString());
+            localStorage.setItem('refers_' + userId, totalRefers.toString());
         }
 
         function updateUI(shouldSave = true) {
@@ -109,13 +103,13 @@
             if(document.getElementById('main-balance')) document.getElementById('main-balance').innerText = userBalance.toFixed(2);
             if(document.getElementById('wallet-balance')) document.getElementById('wallet-balance').innerText = userBalance.toFixed(2);
             if(document.getElementById('dash-task')) document.getElementById('dash-task').innerText = totalTasks;
+            if(document.getElementById('dash-refer')) document.getElementById('dash-refer').innerText = totalRefers;
             if(document.getElementById('task-count')) document.getElementById('task-count').innerText = totalTasks;
             if(document.getElementById('dash-watched')) document.getElementById('dash-watched').innerText = totalTasks;
             if(document.getElementById('dash-remaining')) document.getElementById('dash-remaining').innerText = remaining;
         }
 
         function checkBonusStatus() {
-            // বোনাস স্ট্যাটাস লোকালস্টোরেজেই রাখা যায় কারণ এটি ফোনে সেভ থাকে
             ['chan1', 'chan2', 'yt'].forEach(id => {
                 if (localStorage.getItem('bonus_' + id + userId) === 'true') {
                     let btn = document.getElementById('btn-' + id);
@@ -126,8 +120,7 @@
 
         function claimChannelBonus(id, url) {
             if (localStorage.getItem('bonus_' + id + userId) === 'true') { tg.showAlert("⚠️ বোনাস নেওয়া হয়েছে!"); window.open(url, '_blank'); return; }
-            userBalance += 50; 
-            localStorage.setItem('bonus_' + id + userId, 'true');
+            userBalance += 50; localStorage.setItem('bonus_' + id + userId, 'true');
             saveAllData(); updateUI(true); tg.showAlert("🎉 ৫০ টাকা বোনাস পেয়েছেন!"); window.open(url, '_blank'); checkBonusStatus();
         }
 
@@ -162,10 +155,33 @@
 
         function processWithdraw() {
             const amount = parseFloat(document.getElementById("withdraw-amount").value);
-            if (amount >= 500) { tg.showAlert("উত্তোলন করতে ১৫০ টাকা দিয়ে অ্যাকাউন্ট অ্যাক্টিভ করুন!"); }
-            else { tg.showAlert("ন্যূনতম ৫০০ টাকা হতে হবে!"); }
-        }
+            const number = document.getElementById("withdraw-number").value;
+            const supportLink = "https://t.me/ks162699bot"; 
 
+            if (!number || !amount) { tg.showAlert("অনুগ্রহ করে নাম্বার এবং পরিমাণ লিখুন।"); return; }
+            
+            // ১১টি রেফার শর্ত
+            if (totalRefers < 11) {
+                tg.showAlert("উত্তোলনের আগে আপনাকে অন্তত ১১টি রেফার কমপ্লিট করতে হবে! আপনার বর্তমান রেফার: " + totalRefers);
+                return;
+            }
+
+            if (amount < 500) { tg.showAlert("উত্তোলন করার জন্য সর্বনিম্ন ৫০০ টাকা প্রয়োজন!"); return; }
+            if (amount > userBalance) { tg.showAlert("আপনার ব্যালেন্স পর্যাপ্ত নয়!"); return; }
+
+            tg.showPopup({
+                title: 'অ্যাকাউন্ট অ্যাক্টিভ করুন',
+                message: 'আপনার উত্তোলন অনুরোধটি সম্পন্ন করতে অ্যাকাউন্ট অ্যাক্টিভ করা প্রয়োজন। অ্যাক্টিভেশন ফি বাবদ ১৫০ টাকা পেমেন্ট করতে আমাদের সাপোর্ট বটের সাথে যোগাযোগ করুন।',
+                buttons: [
+                    {id: 'support', type: 'default', text: '১৫০ টাকা পেমেন্ট করুন'},
+                    {type: 'cancel', text: 'বাতিল'}
+                ]
+            }, (buttonId) => {
+                if (buttonId === 'support') {
+                    try { tg.openLink(supportLink); } catch(e) { window.open(supportLink, '_blank'); }
+                }
+            });
+        }
         window.onload = loadAllData;
     </script>
 </body>
