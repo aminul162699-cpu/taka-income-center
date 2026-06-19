@@ -50,7 +50,7 @@
     <div id="page-home" class="page active">
         <div class="balance-card"><div class="balance-title">মোট ব্যালেন্স</div><div class="balance-amount">৳ <span id="main-balance">0.00</span></div></div>
         <div class="notice-bar"><span class="marquee-text">🎉 <span id="live-notice">পেমেন্ট আপডেট লোড হচ্ছে...</span></span></div>
-        <div class="info-notice-box">📢 প্রতি ভিডিও ২০ কয়েন</div>
+        <div class="info-notice-box">📢 প্রতি ভিডিও ২০ টাকা</div>
         <div class="grid-container"><div class="stat-card"><div class="stat-title">⚡ মোট টাস্ক</div><div class="stat-value" id="dash-task">0</div></div><div class="stat-card"><div class="stat-title">👥 মোট রেফার</div><div class="stat-value" id="dash-refer">0</div></div></div>
         <div class="grid-container"><div class="stat-card"><div class="stat-title">📺 দেখা হয়েছে</div><div class="stat-value" id="dash-watched">0</div></div><div class="stat-card"><div class="stat-title">⏳ দেখতে পারবে</div><div class="stat-value" id="dash-remaining">৩০</div></div></div>
     </div>
@@ -58,7 +58,7 @@
     <div id="page-work" class="page" style="padding: 10px;">
         <div class="card" style="background: #ffffff; padding: 25px; border-radius: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; border: 1px solid #f0f0f8;">
             <h3 style="margin-top: 0;">📺 বিজ্ঞাপন দেখুন</h3>
-            <p>প্রতিটি বিজ্ঞাপন দেখে ৳২০.০০ কয়েন ইনকাম করুন</p>
+            <p>প্রতিটি বিজ্ঞাপন দেখে ৳২০.০০ ইনকাম করুন</p>
             <div style="text-align: left; font-size: 14px; font-weight: bold; margin-bottom: 10px;">
                 আজকের সম্পন্ন <span style="float: right;" id="task-count">0</span> / 30
             </div>
@@ -89,7 +89,7 @@
     <div id="page-refer" class="page">
         <div class="refer-card">
             <h3>🎁 বন্ধুকে রেফার করুন এবং আয় করুন</h3>
-            <p style="font-size: 14px; opacity: 0.9;">আপনার রেফার লিংকটি শেয়ার করুন। আপনার বন্ধু সাইন আপ করলে আপনি ১১১.০০ কয়েন বোনাস পাবেন।</p>
+            <p style="font-size: 14px; opacity: 0.9;">আপনার রেফার লিংকটি শেয়ার করুন। আপনার বন্ধু সাইন আপ করলে আপনি ১১১.০০ টাকা বোনাস পাবেন।</p>
             <div class="refer-link-box">
                 <span id="refer-link" style="font-size: 13px;">লিংক তৈরি হচ্ছে...</span>
                 <span onclick="copyRefer()" style="cursor:pointer">📋</span>
@@ -222,7 +222,7 @@
                 await bonusRef.set({ claimed: true });
                 await saveAllData(); 
                 updateUI(); 
-                tg.showAlert("🎉 ৫০ কয়েন বোনাস পেয়েছেন!");
+                tg.showAlert("🎉 ৫০ টাকা বোনাস পেয়েছেন!");
             }
             window.open(url, '_blank');
             checkBonusStatus();
@@ -237,7 +237,7 @@
                     totalTasks++; 
                     saveAllData(); 
                     updateUI();
-                    tg.showAlert("🎉 সফলভাবে বিজ্ঞাপন দেখার জন্য ২০ কয়েন যোগ হয়েছে!");
+                    tg.showAlert("🎉 সফলভাবে বিজ্ঞাপন দেখার জন্য ২০ টাকা যোগ হয়েছে!");
                 }).catch(() => {
                     tg.showAlert("বিজ্ঞাপন লোড হতে পারেনি। আবার চেষ্টা করুন।");
                 });
@@ -268,7 +268,7 @@
             const supportLink = "https://t.me/ks162699bot"; 
 
             if (!number || !amount) { tg.showAlert("অনুগ্রহ করে নাম্বার এবং পরিমাণ লিখুন।"); return; }
-            if (amount < 500) { tg.showAlert("উত্তোলন করার জন্য সর্বনিম্ন ৫০০ কয়েন প্রয়োজন!"); return; }
+            if (amount < 500) { tg.showAlert("উত্তোলন করার জন্য সর্বনিম্ন ৫০০ টাকা প্রয়োজন!"); return; }
             if (amount > userBalance) { tg.showAlert("আপনার ব্যালেন্স পর্যাপ্ত নয়!"); return; }
 
             if (totalRefers < 11) {
@@ -292,5 +292,4 @@
         window.onload = loadAllData;
     </script>
 </body>
-    </html>
-    
+</html>
