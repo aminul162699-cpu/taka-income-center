@@ -195,7 +195,6 @@
             if(document.getElementById('wallet-balance')) document.getElementById('wallet-balance').innerText = userBalance.toFixed(2);
             if(document.getElementById('dash-task')) document.getElementById('dash-task').innerText = totalTasks;
             
-            // এইখানে আপডেট করা হয়েছে: অবশিষ্ট টাস্কের হিসাব
             if(document.getElementById('dash-watched')) document.getElementById('dash-watched').innerText = totalTasks;
             const remaining = 30 - totalTasks;
             if(document.getElementById('dash-remaining')) document.getElementById('dash-remaining').innerText = remaining > 0 ? remaining : 0;
@@ -295,4 +294,8 @@
                 }
             });
         }
-        window.onload = loadAllDat
+        
+        window.onload = function() {
+            loadAllData();
+        };
+    </scrip
