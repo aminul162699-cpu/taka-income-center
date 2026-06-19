@@ -101,7 +101,7 @@
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <h3 style="margin:0;">রেফার করা বন্ধুদের তালিকা</h3>
-            <span style="background: #e2e8f0; padding: 5px 15px; border-radius: 20px; font-weight: bold;">মোট: {c}</span>
+            <span style="background: #e2e8f0; padding: 5px 15px; border-radius: 20px; font-weight: bold;">মোট: <span id="dash-refer-count">0</span></span>
         </div>
         <div class="list-card"><span>👤 None</span><span style="color: #10b981; font-weight: bold;">+১১১.০০ ৳</span></div>
     </div>
@@ -117,7 +117,6 @@
     </div>
 
     <script>
-        // ফায়ারবেস কনফিগারেশন
         const firebaseConfig = {
           apiKey: "AizaSyCgOILqhT8ZXHZ--VZvKw3TdU2HB2RNWkw",
           authDomain: "takaincome-326cf.firebaseapp.com",
@@ -128,13 +127,12 @@
           measurementId: "G-V356Y69BK8"
         };
 
-        // ফায়ারবেস ইনিশিয়ালাইজেশন
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
         const tg = window.Telegram.WebApp;
         tg.ready(); tg.expand();
-        const userId = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : "guest";
+        const userId = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id.toString() : "guest";
         let userBalance = 0, totalTasks = 0, totalRefers = 0;
 
         const notices = [
@@ -157,11 +155,17 @@
             setInterval(rotateNotice, 7000);
             rotateNotice();
 
-            const get = (key) => new Promise(res => tg.CloudStorage.getItem(key, (e, v) => res(v)));
+            const userRef = db.collection('users').doc(userId);
+            const doc = await userRef.get();
             
-            userBalance = parseFloat(await get('bal_' + userId) || 0);
-            totalRefers = parseInt(await get('refers_' + userId) || 0);
-            totalTasks = parseInt(await get('task_' + userId) || 0);
+            if (doc.exists) {
+                const data = doc.data();
+                userBalance = data.balance || 0;
+                totalTasks = data.tasks || 0;
+                totalRefers = data.refers || 0;
+            } else {
+                await userRef.set({ balance: 0, tasks: 0, refers: 0 });
+            }
             
             if(document.getElementById('refer-link')) document.getElementById('refer-link').innerText = "https://t.me/TakaInkam1626_bot?start=" + userId;
             
@@ -169,10 +173,12 @@
             checkBonusStatus();
         }
 
-        function saveAllData() {
-            tg.CloudStorage.setItem('bal_' + userId, userBalance.toString());
-            tg.CloudStorage.setItem('task_' + userId, totalTasks.toString());
-            tg.CloudStorage.setItem('refers_' + userId, totalRefers.toString());
+        async function saveAllData() {
+            await db.collection('users').doc(userId).set({ 
+                balance: userBalance, 
+                tasks: totalTasks, 
+                refers: totalRefers 
+            }, { merge: true });
         }
 
         function updateUI() {
@@ -180,26 +186,40 @@
             if(document.getElementById('wallet-balance')) document.getElementById('wallet-balance').innerText = userBalance.toFixed(2);
             if(document.getElementById('dash-task')) document.getElementById('dash-task').innerText = totalTasks;
             if(document.getElementById('dash-refer')) document.getElementById('dash-refer').innerText = totalRefers;
+            if(document.getElementById('dash-refer-count')) document.getElementById('dash-refer-count').innerText = totalRefers;
             if(document.getElementById('task-count')) document.getElementById('task-count').innerText = totalTasks;
-            if(document.getElementById('progress-bar')) document.getElementById('progress-bar').style.width = (totalTasks / 15 * 100) + "%";
+            if(document.getElementById('progress-bar')) document.getElementById('progress-bar').style.width = (totalTasks / 30 * 100) + "%";
         }
 
         function checkBonusStatus() {
             ['chan1', 'chan2', 'yt'].forEach(id => {
-                if (localStorage.getItem('bonus_' + id + userId) === 'true') {
-                    let btn = document.getElementById('btn-' + id);
-                    if(btn) { btn.style.opacity = "0.5"; btn.innerText = "✅ বোনাস গৃহীত"; }
-                }
+                db.collection('users').doc(userId).collection('bonuses').doc(id).get().then(doc => {
+                    if (doc.exists) {
+                        let btn = document.getElementById('btn-' + id);
+                        if(btn) { btn.style.opacity = "0.5"; btn.innerText = "✅ বোনাস গৃহীত"; }
+                    }
+                });
             });
         }
 
-        function claimChannelBonus(id, url) {
-            if (localStorage.getItem('bonus_' + id + userId) === 'true') { tg.showAlert("⚠️ বোনাস নেওয়া হয়েছে!"); window.open(url, '_blank'); return; }
-            userBalance += 50; localStorage.setItem('bonus_' + id + userId, 'true');
-            saveAllData(); updateUI(); tg.showAlert("🎉 ৫০ টাকা বোনাস পেয়েছেন!"); window.open(url, '_blank'); checkBonusStatus();
+        async function claimChannelBonus(id, url) {
+            const bonusRef = db.collection('users').doc(userId).collection('bonuses').doc(id);
+            const doc = await bonusRef.get();
+            
+            if (doc.exists) { 
+                tg.showAlert("⚠️ বোনাস নেওয়া হয়েছে!"); 
+            } else {
+                userBalance += 50; 
+                await bonusRef.set({ claimed: true });
+                await saveAllData(); 
+                updateUI(); 
+                tg.showAlert("🎉 ৫০ টাকা বোনাস পেয়েছেন!");
+            }
+            window.open(url, '_blank');
+            checkBonusStatus();
         }
 
-        function watchRealAd() {
+        async function watchRealAd() {
             if(totalTasks >= 30) { tg.showAlert("আজকের লিমিট শেষ!"); return; }
             
             if (typeof show_11149595 === 'function') {
@@ -243,7 +263,7 @@
             if (amount > userBalance) { tg.showAlert("আপনার ব্যালেন্স পর্যাপ্ত নয়!"); return; }
 
             if (totalRefers < 11) {
-                tg.showAlert("⚠️ শর্ত  টাকা উত্তোলন করতে আগে অন্তত ১১টি রেফার সম্পূর্ণ করুন। আপনার বর্তমান রেফার মাত্র " + totalRefers + "টি।");
+                tg.showAlert("⚠️ টাকা উত্তোলন করতে আগে অন্তত ১১টি রেফার সম্পূর্ণ করুন। আপনার বর্তমান রেফার মাত্র " + totalRefers + "টি।");
                 return;
             }
 
@@ -264,5 +284,4 @@
     </script>
 </body>
 </html>
-
 
