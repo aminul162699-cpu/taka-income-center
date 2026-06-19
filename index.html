@@ -121,6 +121,7 @@ const tg = window.Telegram.WebApp;
 tg.ready(); tg.expand();
 const userId = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id.toString() : "guest";
 let userBalance = 0, totalTasks = 0, totalRefers = 0;
+
 const notices = [
 "বিকাশ এর মাধ্যমে Joy*** সবেমাত্র ৳৫০০ উত্তোলন করেছেন!",
 "নগদ এর মাধ্যমে Rahim*** সবেমাত্র ৳৭০০ উত্তোলন করেছেন!",
@@ -129,36 +130,51 @@ const notices = [
 "বিকাশ এর মাধ্যমে Mim*** সবেমাত্র ৳৫০০ উত্তোলন করেছেন!"
 ];
 let currentNotice = 0;
+
 function rotateNotice() {
-const noticeEl = document.getElementById('live-notice');
-if(noticeEl) {
-noticeEl.innerText = notices[currentNotice];
-currentNotice = (currentNotice + 1) % notices.length;
+    const noticeEl = document.getElementById('live-notice');
+    if(noticeEl) {
+        noticeEl.innerText = notices[currentNotice];
+        currentNotice = (currentNotice + 1) % notices.length;
+    }
 }
-}
+
 async function loadAllData() {
-setInterval(rotateNotice, 7000);
-rotateNotice();
-const userRef = db.collection('users').doc(userId);
-const doc = await userRef.get();
-if (doc.exists) {
-const data = doc.data();
-userBalance = data.balance || 0;
-totalTasks = data.tasks || 0;
-totalRefers = data.refers || 0;
-} else {
-await userRef.set({ balance: 0, tasks: 0, refers: 0 });
+    setInterval(rotateNotice, 7000);
+    rotateNotice();
+    const userRef = db.collection('users').doc(userId);
+    const doc = await userRef.get();
+    const today = new Date().toDateString();
+    
+    if (doc.exists) {
+        const data = doc.data();
+        // ডেইলি রিসেট লজিক
+        if (data.lastDate !== today) {
+            totalTasks = 0;
+            userBalance = data.balance || 0;
+            totalRefers = data.refers || 0;
+            await userRef.set({ tasks: 0, lastDate: today, balance: userBalance, refers: totalRefers }, { merge: true });
+        } else {
+            userBalance = data.balance || 0;
+            totalTasks = data.tasks || 0;
+            totalRefers = data.refers || 0;
+        }
+    } else {
+        await userRef.set({ balance: 0, tasks: 0, refers: 0, lastDate: today });
+    }
+    if(document.getElementById('refer-link')) document.getElementById('refer-link').innerText = "https://t.me/TakaInkam1626_bot?start=" + userId;
+    updateUI();
+    checkBonusStatus();
 }
-if(document.getElementById('refer-link')) document.getElementById('refer-link').innerText = "https://t.me/TakaInkam1626_bot?start=" + userId;
-updateUI();
-checkBonusStatus();
-}
+
 async function saveAllData() {
-await db.collection('users').doc(userId).set({ 
-balance: userBalance, 
-tasks: totalTasks, 
-refers: totalRefers 
-}, { merge: true });
+    const today = new Date().toDateString();
+    await db.collection('users').doc(userId).set({ 
+        balance: userBalance, 
+        tasks: totalTasks, 
+        refers: totalRefers,
+        lastDate: today 
+    }, { merge: true });
 }
 
 function updateUI() {
@@ -174,84 +190,90 @@ function updateUI() {
 }
 
 function checkBonusStatus() {
-['chan1', 'chan2', 'yt'].forEach(id => {
-db.collection('users').doc(userId).collection('bonuses').doc(id).get().then(doc => {
-if (doc.exists) {
-let btn = document.getElementById('btn-' + id);
-if(btn) { btn.style.opacity = "0.5"; btn.innerText = "✅ বোনাস গৃহীত"; btn.disabled = true; }
+    ['chan1', 'chan2', 'yt'].forEach(id => {
+        db.collection('users').doc(userId).collection('bonuses').doc(id).get().then(doc => {
+            if (doc.exists) {
+                let btn = document.getElementById('btn-' + id);
+                if(btn) { btn.style.opacity = "0.5"; btn.innerText = "✅ বোনাস গৃহীত"; btn.disabled = true; }
+            }
+        });
+    });
 }
-});
-});
-}
+
 async function claimChannelBonus(id, url) {
-const bonusRef = db.collection('users').doc(userId).collection('bonuses').doc(id);
-const doc = await bonusRef.get();
-if (doc.exists) { 
-tg.showAlert("⚠️ বোনাস নেওয়া হয়েছে!"); 
-} else {
-userBalance += 50; 
-await bonusRef.set({ claimed: true });
-await saveAllData(); 
-updateUI(); 
-tg.showAlert("🎉 ৫০ টাকা বোনাস পেয়েছেন!");
+    const bonusRef = db.collection('users').doc(userId).collection('bonuses').doc(id);
+    const doc = await bonusRef.get();
+    if (doc.exists) { 
+        tg.showAlert("⚠️ বোনাস নেওয়া হয়েছে!"); 
+    } else {
+        userBalance += 50; 
+        await bonusRef.set({ claimed: true });
+        await saveAllData(); 
+        updateUI(); 
+        tg.showAlert("🎉 ৫০ টাকা বোনাস পেয়েছেন!");
+    }
+    window.open(url, '_blank');
+    checkBonusStatus();
 }
-window.open(url, '_blank');
-checkBonusStatus();
-}
+
 async function watchRealAd() {
-if(totalTasks >= 30) { tg.showAlert("আজকের লিমিট শেষ!"); return; }
-if (typeof show_11149595 === 'function') {
-show_11149595().then(() => {
-userBalance += 20; 
-totalTasks++; 
-saveAllData(); 
-updateUI();
-tg.showAlert("🎉 সফলভাবে বিজ্ঞাপন দেখার জন্য ২০ টাকা যোগ হয়েছে!");
-}).catch(() => {
-tg.showAlert("বিজ্ঞাপন লোড হতে পারেনি। আবার চেষ্টা করুন।");
-});
-} else {
-tg.showAlert("বিজ্ঞাপন নেটওয়ার্ক লোড হচ্ছে...");
+    if(totalTasks >= 30) { tg.showAlert("আজকের লিমিট শেষ!"); return; }
+    if (typeof show_11149595 === 'function') {
+        show_11149595().then(() => {
+            userBalance += 20; 
+            totalTasks++; 
+            saveAllData(); 
+            updateUI();
+            tg.showAlert("🎉 সফলভাবে বিজ্ঞাপন দেখার জন্য ২০ টাকা যোগ হয়েছে!");
+        }).catch(() => {
+            tg.showAlert("বিজ্ঞাপন লোড হতে পারেনি। আবার চেষ্টা করুন।");
+        });
+    } else {
+        tg.showAlert("বিজ্ঞাপন নেটওয়ার্ক লোড হচ্ছে...");
+    }
 }
-}
+
 function switchPage(id, el) {
-document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-document.getElementById('page-' + id).classList.add('active');
-document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-el.classList.add('active');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
 }
+
 function copyRefer() { 
-navigator.clipboard.writeText(document.getElementById("refer-link").innerText);
-tg.showAlert("লিংক কপি হয়েছে!"); 
+    navigator.clipboard.writeText(document.getElementById("refer-link").innerText);
+    tg.showAlert("লিংক কপি হয়েছে!"); 
 }
 function shareRefer() {
-tg.openTelegramLink("https://t.me/share/url?url=" + encodeURIComponent(document.getElementById("refer-link").innerText));
+    tg.openTelegramLink("https://t.me/share/url?url=" + encodeURIComponent(document.getElementById("refer-link").innerText));
 }
+
 function processWithdraw() {
-const amount = parseFloat(document.getElementById("withdraw-amount").value);
-const number = document.getElementById("withdraw-number").value;
-const supportLink = "https://t.me/ks162699bot"; 
-if (!number || !amount) { tg.showAlert("অনুগ্রহ করে নাম্বার এবং পরিমাণ লিখুন।"); return; }
-if (amount < 500) { tg.showAlert("উত্তোলন করার জন্য সর্বনিম্ন ৫০০ টাকা প্রয়োজন!"); return; }
-if (amount > userBalance) { tg.showAlert("আপনার ব্যালেন্স পর্যাপ্ত নয়!"); return; }
-if (totalRefers < 11) {
-tg.showAlert("⚠️ টাকা উত্তোলন করতে আগে অন্তত ১১টি রেফার সম্পূর্ণ করুন। আপনার বর্তমান রেফার মাত্র " + totalRefers + "টি।");
-return;
-}
-tg.showPopup({
-title: 'অ্যাকাউন্ট অ্যাক্টিভ করুন',
-message: 'আপনার রেফার সম্পন্ন হয়েছে, কিন্তু আপনার রেফার ভেরিফিকেশন হয়নি। অ্যাকাউন্টটি অ্যাক্টিভ করতে ৳১১১ পেমেন্ট করুন।',
-buttons: [
-{id: 'support', type: 'default', text: '৳১১১ পেমেন্ট করুন'},
-{type: 'cancel', text: 'বাতিল'}
-]
-}, (buttonId) => {
-if (buttonId === 'support') {
-try { tg.openLink(supportLink); } catch(e) { window.open(supportLink, '_blank'); }
-}
-});
+    const amount = parseFloat(document.getElementById("withdraw-amount").value);
+    const number = document.getElementById("withdraw-number").value;
+    const supportLink = "https://t.me/ks162699bot"; 
+    if (!number || !amount) { tg.showAlert("অনুগ্রহ করে নাম্বার এবং পরিমাণ লিখুন।"); return; }
+    if (amount < 500) { tg.showAlert("উত্তোলন করার জন্য সর্বনিম্ন ৫০০ টাকা প্রয়োজন!"); return; }
+    if (amount > userBalance) { tg.showAlert("আপনার ব্যালেন্স পর্যাপ্ত নয়!"); return; }
+    if (totalRefers < 11) {
+        tg.showAlert("⚠️ টাকা উত্তোলন করতে আগে অন্তত ১১টি রেফার সম্পূর্ণ করুন। আপনার বর্তমান রেফার মাত্র " + totalRefers + "টি।");
+        return;
+    }
+    tg.showPopup({
+        title: 'অ্যাকাউন্ট অ্যাক্টিভ করুন',
+        message: 'আপনার রেফার সম্পন্ন হয়েছে, কিন্তু আপনার রেফার ভেরিফিকেশন হয়নি। অ্যাকাউন্টটি অ্যাক্টিভ করতে ৳১১১ পেমেন্ট করুন।',
+        buttons: [
+            {id: 'support', type: 'default', text: '৳১১১ পেমেন্ট করুন'},
+            {type: 'cancel', text: 'বাতিল'}
+        ]
+    }, (buttonId) => {
+        if (buttonId === 'support') {
+            try { tg.openLink(supportLink); } catch(e) { window.open(supportLink, '_blank'); }
+        }
+    });
 }
 window.onload = loadAllData;
 </script>
 </body>
-</html>
+    </html>
+    
