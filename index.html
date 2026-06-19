@@ -194,6 +194,7 @@
             if(document.getElementById('main-balance')) document.getElementById('main-balance').innerText = userBalance.toFixed(2);
             if(document.getElementById('wallet-balance')) document.getElementById('wallet-balance').innerText = userBalance.toFixed(2);
             if(document.getElementById('dash-task')) document.getElementById('dash-task').innerText = totalTasks;
+            if(document.getElementById('dash-watched')) document.getElementById('dash-watched').innerText = totalTasks; // আপডেট করা হয়েছে
             if(document.getElementById('dash-refer')) document.getElementById('dash-refer').innerText = totalRefers;
             if(document.getElementById('dash-refer-count')) document.getElementById('dash-refer-count').innerText = totalRefers;
             if(document.getElementById('task-count')) document.getElementById('task-count').innerText = totalTasks;
@@ -232,10 +233,10 @@
             if(totalTasks >= 30) { tg.showAlert("আজকের লিমিট শেষ!"); return; }
             
             if (typeof show_11149595 === 'function') {
-                show_11149595().then(() => {
+                show_11149595().then(async () => {
                     userBalance += 20; 
                     totalTasks++; 
-                    saveAllData(); 
+                    await saveAllData(); 
                     updateUI();
                     tg.showAlert("🎉 সফলভাবে বিজ্ঞাপন দেখার জন্য ২০ টাকা যোগ হয়েছে!");
                 }).catch(() => {
