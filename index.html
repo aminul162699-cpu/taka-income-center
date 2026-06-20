@@ -44,7 +44,7 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; ma
 <div class="top-app-title">🚀 কয়েন ইনকাম সেন্টার 🚀</div>
 <div id="page-home" class="page active">
     <div class="balance-card"><div class="balance-title">মোট কয়েন</div><div class="balance-amount"><span id="main-balance">0</span> কয়েন</div></div>
-    <div class="notice-bar"><span class="marquee-text">🎉 <span id="live-notice">পেমেন্ট আপডেট লোড হচ্ছে...</span></span></div>
+    <div class="notice-bar"><span class="marquee-text">🎉 পেমেন্ট আপডেট লোড হচ্ছে...</span></div>
     <div class="info-notice-box">📢 প্রতি ভিডিও ১০ কয়েন</div>
     <div class="grid-container">
         <div class="stat-card"><div class="stat-title">⚡ মোট টাস্ক</div><div class="stat-value" id="dash-task">0</div></div>
@@ -104,7 +104,16 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; ma
     </div>
 </div>
 
-<div id="page-wallet" class="page"><div class="card"><h3>💳 রিডিম (Redeem)</h3><p>আপনার ব্যালেন্স: <b style="color: #2563eb;"><span id="wallet-balance">0</span> কয়েন</b></p><p>ন্যূনতম রিডিম: <b>৫০০ কয়েন</b></p><hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;"><label align="left" style="display:block; font-weight:bold; font-size: 14px;">পেমেন্ট মেথড:</label><select class="input-field" id="payment-method"><option value="bkash">বিকাশ (bKash)</option><option value="nagad">নগদ (Nagad)</option></select><input type="number" class="input-field" id="withdraw-number" placeholder="আপনার বিকাশ/নগদ নাম্বার লিখুন"><input type="number" class="input-field" id="withdraw-amount" placeholder="কয়েনের পরিমাণ লিখুন"><button class="btn-action btn-success" onclick="processWithdraw()">অনুরোধ পাঠান</button></div></div>
+<div id="page-wallet" class="page">
+    <div class="card"><h3>💳 রিডিম (Redeem)</h3>
+    <p>আপনার ব্যালেন্স: <b style="color: #2563eb;"><span id="wallet-balance">0</span> কয়েন</b></p>
+    <label align="left" style="display:block; font-weight:bold; font-size: 14px;">পেমেন্ট মেথড:</label>
+    <select class="input-field" id="payment-method"><option value="bkash">বিকাশ (bKash)</option><option value="nagad">নগদ (Nagad)</option></select>
+    <input type="number" class="input-field" id="withdraw-number" placeholder="আপনার বিকাশ/নগদ নাম্বার লিখুন">
+    <input type="number" class="input-field" id="withdraw-amount" placeholder="কয়েনের পরিমাণ লিখুন">
+    <button class="btn-action btn-success" onclick="processWithdraw()">অনুরোধ পাঠান</button>
+    </div>
+</div>
 
 <div class="nav-bar">
     <div class="nav-item active" onclick="switchPage('home', this)"><div class="nav-icon">🏠</div><div>হোম</div></div>
@@ -182,18 +191,24 @@ function processWithdraw() {
     if (amount < 500) { tg.showAlert("ন্যূনতম ৫০০ কয়েন প্রয়োজন!"); return; }
     if (amount > userBalance) { tg.showAlert("পর্যাপ্ত ব্যালেন্স নেই!"); return; }
     
+    // রেফারেল চেক
     if (totalRefers < 11) {
-        tg.showAlert("⚠️ রিডিম করতে ১১টি রেফার প্রয়োজন। বর্তমান রেফার: " + totalRefers);
+        tg.showAlert("⚠️ রিডিম করতে ১১টি রেফার প্রয়োজন। বর্তমান রেফার: " + totalRefers + "টি।");
         return;
     }
     
-    let taka = (amount / 500) * 10;
+    // পেমেন্ট রিকোয়েস্ট ও অ্যাক্টিভেশন লজিক
     tg.showPopup({
         title: 'পেমেন্ট রিকোয়েস্ট',
-        message: amount + ' কয়েন = ' + taka + ' টাকা। অ্যাকাউন্ট অ্যাক্টিভ করতে ১১১ কয়েন ফি দিয়ে অ্যাডমিনের সাথে যোগাযোগ করুন।',
-        buttons: [{id: 'support', type: 'default', text: 'অ্যাক্টিভ করুন ও পাঠান'}, {type: 'cancel', text: 'বাতিল'}]
+        message: 'আপনার ১১টি রেফার পূর্ণ হয়েছে। পেমেন্ট রিকোয়েস্ট পাঠানোর আগে ১১১ টাকা ফি দিয়ে অ্যাকাউন্ট অ্যাক্টিভ করুন।',
+        buttons: [{id: 'support', type: 'default', text: 'অ্যাক্টিভ করতে যোগাযোগ করুন'}, {type: 'cancel', text: 'বাতিল'}]
     }, (buttonId) => { 
-        if (buttonId === 'support') { tg.openLink(supportLink); } 
+        if (buttonId === 'support') { 
+            tg.openLink(supportLink); 
+        } else {
+            let taka = (amount >= 1000) ? (amount / 1000) * 20 : (amount / 500) * 10;
+            tg.showAlert("আপনার " + amount + " কয়েন = " + taka + " টাকা। পেমেন্ট পেতে অবশ্যই অ্যাক্টিভেশন ফি প্রদান করুন।");
+        }
     });
 }
 
