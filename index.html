@@ -154,7 +154,7 @@ async function loadAllData() {
     }
     document.getElementById('refer-link').innerText = "https://t.me/TakaInkam1626_bot?start=" + userId;
     updateUI();
-    loadReferralsList(); // লাইভ বন্ধুদের তালিকা লোড করার নতুন ফাংশন
+    loadReferralsList();
 }
 
 async function saveAllData() {
@@ -178,44 +178,28 @@ function updateUI() {
     if(document.getElementById('progress-bar')) document.getElementById('progress-bar').style.width = (totalWatched / 50 * 100) + "%";
 }
 
-// ডেটাবেজ থেকে আসল বন্ধুদের কুয়েরি করে স্ক্রিনে দেখানোর ফাংশন (যা এতক্ষণ কোডে ছিল না)
 function loadReferralsList() {
     const listContainer = document.getElementById('referrals-list-container');
     if (!listContainer) return;
 
-    db.collection('referrals')
-        .where('referrerId', '==', userId)
-        .orderBy('timestamp', 'desc')
-        .onSnapshot((snapshot) => {
-            listContainer.innerHTML = '';
-            if (snapshot.empty) {
-                listContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b; font-weight:bold;">এখনো কোনো রেফার করা হয়নি</div>';
-                return;
-            }
-            
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                const referredUid = data.referredId || "User";
-                let dateStr = "সদ্যই";
-                if (data.timestamp) {
-                    const date = data.timestamp.toDate();
-                    dateStr = date.toLocaleDateString('bn-BD') + " " + date.toLocaleTimeString('bn-BD', {hour: '2-digit', minute:'2-digit'});
-                }
-                
-                const card = document.createElement('div');
-                card.className = 'list-card';
-                card.innerHTML = `
-                    <div>
-                        <div>👤 ID: ${referredUid}</div>
-                        <div class="list-date">📅 ${dateStr}</div>
-                    </div>
-                    <div style="color: #10b981;">+১১১ কয়েন</div>
-                `;
-                listContainer.appendChild(card);
-            });
-        }, (error) => {
-            console.error("ইন্ডেক্স বা ডেটা লোড এরর:", error);
-        });
+    listContainer.innerHTML = '';
+    if (totalRefers <= 0) {
+        listContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b; font-weight:bold;">এখনো কোনো রেফার করা হয়নি</div>';
+        return;
+    }
+    
+    for (let i = 1; i <= totalRefers; i++) {
+        const card = document.createElement('div');
+        card.className = 'list-card';
+        card.innerHTML = `
+            <div>
+                <div>👤 সফল রেফারেল #00${i}</div>
+                <div class="list-date">📅 সক্রিয় মেম্বার</div>
+            </div>
+            <div style="color: #10b981;">+১১১ কয়েন</div>
+        `;
+        listContainer.appendChild(card);
+    }
 }
 
 async function watchRealAd() {
