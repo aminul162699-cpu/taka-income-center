@@ -37,11 +37,22 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; ma
 .refer-card { background: #1e293b; color: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 20px; }
 .refer-link-box { background: #0f172a; padding: 15px; border-radius: 12px; margin: 15px 0; display: flex; align-items: center; justify-content: space-between; font-size: 14px; }
 .btn-refer-action { background: #ec4899; color: white; border: none; padding: 14px; border-radius: 12px; width: 48%; font-weight: bold; cursor: pointer; }
-.list-card { background: white; padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+
+/* ইমেজ অনুযায়ী নতুন রেফারেল ট্রানজেকশন হিস্ট্রি লিস্টের স্টাইল */
+.referral-container { background: #ffffff; border-radius: 20px; padding: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); margin-top: 10px; }
+.history-item { display: flex; align-items: center; justify-content: space-between; background: #f8f9fe; padding: 12px 15px; border-radius: 12px; margin-bottom: 10px; text-align: left; }
+.left-content { display: flex; align-items: center; }
+.icon-circle { width: 38px; height: 38px; background-color: #e8ebfd; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #5c67f2; font-size: 18px; font-weight: bold; margin-right: 12px; }
+.details { display: flex; flex-direction: column; }
+.title { font-size: 14px; font-weight: bold; color: #222; margin-bottom: 2px; }
+.date { font-size: 11px; color: #888; }
+.amount { font-size: 15px; font-weight: bold; color: #5c67f2; }
+.no-data { text-align: center; color: #94a3b8; padding: 20px; font-size: 14px; }
 </style>
 </head>
 <body>
 <div class="top-app-title">🚀 টাকা ইনকাম সেন্টার 🚀</div>
+
 <div id="page-home" class="page active">
     <div class="balance-card"><div class="balance-title">মোট কয়েন</div><div class="balance-amount"><span id="main-balance">0</span> কয়েন</div></div>
     <div class="notice-bar"><span class="marquee-text">🎉 পেমেন্ট আপডেট লোড হচ্ছে...</span></div>
@@ -98,9 +109,14 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; ma
             <button class="btn-refer-action" style="background:#8b5cf6" onclick="shareRefer()">শেয়ার করুন</button>
         </div>
     </div>
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <h3 style="margin:0;">রেফার করা বন্ধুদের তালিকা</h3>
-        <span style="background: #e2e8f0; padding: 5px 15px; border-radius: 20px; font-weight: bold;">মোট: <span id="dash-refer-count">0</span></span>
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 5px;">
+        <h3 style="margin:0; font-size: 16px; color: #1e293b;">রেফার করা বন্ধুদের তালিকা</h3>
+        <span style="background: #e2e8f0; padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 14px; color: #334155;">মোট: <span id="dash-refer-count">0</span></span>
+    </div>
+    
+    <div class="referral-container" id="referral-history-list">
+        <div class="no-data">লোডিং রেফারেল হিস্ট্রি...</div>
     </div>
 </div>
 
@@ -152,6 +168,7 @@ async function loadAllData() {
     }
     document.getElementById('refer-link').innerText = "https://t.me/TakaInkam1626_bot?start=" + userId;
     updateUI();
+    loadReferralHistory(); // রেফারেল হিস্ট্রি নিয়ে আসার ফাংশন চালু
 }
 
 async function saveAllData() {
@@ -167,13 +184,74 @@ function updateUI() {
     document.getElementById('dash-refer').innerText = totalRefers;
     document.getElementById('dash-refer-count').innerText = totalRefers;
     
-    // সংশোধিত অংশ
     document.getElementById('task-count').innerText = totalWatched;
     document.getElementById('total-watched-count').innerText = totalWatched;
     document.getElementById('dash-watched').innerText = totalWatched;
     document.getElementById('dash-remaining').innerText = (50 - totalWatched);
     
     if(document.getElementById('progress-bar')) document.getElementById('progress-bar').style.width = (totalWatched / 50 * 100) + "%";
+}
+
+// Firestore থেকে রিয়েল-টাইমে রেফার হিস্ট্রি এবং কাউন্টার আপডেট করার ফাংশন
+async function loadReferralHistory() {
+    const historyContainer = document.getElementById('referral-history-list');
+    try {
+        const querySnapshot = await db.collection('referrals')
+                                      .where('referrerId', '==', userId)
+                                      .orderBy('timestamp', 'desc')
+                                      .get();
+        
+        // রিয়েল-টাইমে মোট রেফার সংখ্যা গুনে নিয়ে ভ্যারিয়েবল ও UI আপডেট করা
+        const totalReferCount = querySnapshot.size;
+        totalRefers = totalReferCount;
+        document.getElementById('dash-refer').innerText = totalReferCount;
+        document.getElementById('dash-refer-count').innerText = totalReferCount;
+        
+        if (querySnapshot.empty) {
+            historyContainer.innerHTML = '<div class="no-data">এখনো কোনো রেফার করা হয়নি।</div>';
+            return;
+        }
+        
+        let htmlContent = '';
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            
+            // টাইমস্ট্যাম্প থেকে ডেট ফরম্যাট তৈরি (যেমন: 16 Jun, 2026 10:17 AM)
+            let dateStr = "সঠিক সময় পাওয়া যায়নি";
+            if(data.timestamp) {
+                const date = data.timestamp.toDate();
+                dateStr = date.toLocaleString('en-US', { 
+                    day: 'numeric', 
+                    month: 'short', 
+                    year: 'numeric', 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    hour12: true 
+                });
+            }
+            
+            const bonusAmount = data.amount || 111; 
+            
+            // ইমেজ অনুযায়ী হুবহু নতুন কার্ড ইন্টারফেস তৈরি
+            htmlContent += `
+                <div class="history-item">
+                    <div class="left-content">
+                        <div class="icon-circle">↑</div>
+                        <div class="details">
+                            <span class="title">রেফারেল বোনাস</span>
+                            <span class="date">${dateStr}</span>
+                        </div>
+                    </div>
+                    <div class="amount">+${bonusAmount} কয়েন</div>
+                </div>
+            `;
+        });
+        
+        historyContainer.innerHTML = htmlContent;
+    } catch (error) {
+        console.error("Error loading referrals: ", error);
+        historyContainer.innerHTML = '<div class="no-data" style="color: #ef4444;">হিস্ট্রি লোড করতে সমস্যা হয়েছে।</div>';
+    }
 }
 
 async function watchRealAd() {
@@ -227,5 +305,5 @@ function claimChannelBonus(id, url) { window.open(url, '_blank'); }
 window.onload = loadAllData;
 </script>
 </body>
-    </html>
-    
+        </html>
+        
