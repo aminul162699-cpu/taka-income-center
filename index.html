@@ -67,7 +67,13 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; ma
         <p>প্রতিটি বিজ্ঞাপন দেখে ১০ কয়েন ইনকাম করুন</p>
         <div style="text-align: left; font-size: 14px; font-weight: bold; margin-bottom: 10px;">আজকের সম্পন্ন <span style="float: right;" id="task-count">0</span> / 50</div>
         <div style="background: #e2e8f0; height: 12px; border-radius: 10px; margin-bottom: 25px; overflow: hidden;"><div id="progress-bar" style="background: #6366f1; height: 100%; width: 0%; border-radius: 10px;"></div></div>
-        <button class="btn-action" style="background: #ef4444; padding: 18px; border-radius: 18px;" onclick="watchRealAd()">বিজ্ঞাপন দেখুন</button>
+        
+        <button id="btn-watch" class="btn-action" style="background: #ef4444; padding: 18px; border-radius: 18px;" onclick="watchRealAd()">বিজ্ঞাপন দেখুন</button>
+        
+        <!-- টাইমার সেকশন -->
+        <div id="timer-box" style="display:none; margin-top:15px; font-weight:bold; color:#ef4444;">
+            পরবর্তী ভিডিওর জন্য সময়: <span id="countdown">00:00:00</span>
+        </div>
     </div>
     <button class="btn-action" id="btn-chan1" style="background: #90caf9; padding: 12px;" onclick="claimChannelBonus('chan1', 'https://t.me/ad16269')">✅ চ্যানেল ১ বোনাস (৪০ কয়েন)</button>
     <button class="btn-action" id="btn-chan2" style="background: #90caf9; padding: 12px;" onclick="claimChannelBonus('chan2', 'https://t.me/AK26269')">✅ চ্যানেল ২ বোনাস (৪০ কয়েন)</button>
@@ -115,7 +121,13 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; ma
         <label align="left" style="display:block; font-weight:bold; font-size: 14px;">পেমেন্ট মেথড:</label>
         <select class="input-field" id="payment-method"><option value="bkash">বিকাশ (bKash)</option><option value="nagad">নগদ (Nagad)</option></select>
         <input type="number" class="input-field" id="withdraw-number" placeholder="আপনার বিকাশ/নগদ নাম্বার লিখুন">
-        <input type="number" class="input-field" id="withdraw-amount" placeholder="কয়েনের পরিমাণ লিখুন">
+        <input type="number" class="input-field" id="withdraw-amount" placeholder="কয়েনের পরিমাণ লিখুন" oninput="calculateMoney()">
+        
+        <!-- লাইভ ক্যালকুলেশন বক্স (শর্তসাপেক্ষে দৃশ্যমান) -->
+        <div id="calc-result" style="display:none; margin: 10px 0; padding: 10px; background: #e0f2fe; border-radius: 10px; font-weight: bold; color: #0369a1;">
+            আপনি পাবেন: <span id="money-display">০</span> টাকা
+        </div>
+        
         <button class="btn-action btn-success" onclick="processWithdraw()">অনুরোধ পাঠান</button>
     </div>
     <div class="card" style="margin-top:20px;">
@@ -163,9 +175,38 @@ async function loadAllData() {
         isActive = data.is_active || false;
     }
     document.getElementById('refer-link').innerText = "https://t.me/TakaInkam1626_bot?start=" + userId;
+    
+    // টাইমার চেক
+    if(totalWatched >= 50) startTimer();
+    
     updateUI();
     loadReferralsList();
     loadPaymentHistory();
+}
+
+function startTimer() {
+    document.getElementById('btn-watch').style.display = 'none';
+    document.getElementById('timer-box').style.display = 'block';
+    let duration = 3600; // ১ ঘণ্টা (আপনার পছন্দমতো সময় দিন)
+    const display = document.getElementById('countdown');
+    const timer = setInterval(() => {
+        let m = Math.floor(duration / 60);
+        let s = duration % 60;
+        display.innerText = m + " মিনিট " + s + " সেকেন্ড";
+        if (--duration < 0) { clearInterval(timer); location.reload(); }
+    }, 1000);
+}
+
+function calculateMoney() {
+    const amount = parseFloat(document.getElementById("withdraw-amount").value);
+    const moneyDisplay = document.getElementById("money-display");
+    // শর্ত: ১১ রেফার এবং একাউন্ট অ্যাক্টিভ হলে ক্যালকুলেশন দেখাবে
+    if (isActive && totalRefers >= 11 && amount >= 500) {
+        document.getElementById("calc-result").style.display = 'block';
+        moneyDisplay.innerText = amount / 50; 
+    } else {
+        document.getElementById("calc-result").style.display = 'none';
+    }
 }
 
 async function saveAllData() {
@@ -234,7 +275,7 @@ async function loadPaymentHistory() {
 }
 
 async function watchRealAd() {
-    if(totalWatched >= 50) { tg.showAlert("আজকের লিমিট শেষ!"); return; }
+    if(totalWatched >= 50) { startTimer(); return; }
     if (typeof show_11149595 === 'function') {
         show_11149595().then(() => {
             userBalance += 10; totalTasks++; totalWatched++;
@@ -294,8 +335,4 @@ function switchPage(id, el) {
 }
 function copyRefer() { navigator.clipboard.writeText("https://t.me/TakaInkam1626_bot?start=" + userId); tg.showAlert("লিংক কপি হয়েছে!"); }
 function shareRefer() { tg.openTelegramLink("https://t.me/share/url?url=" + encodeURIComponent("https://t.me/TakaInkam1626_bot?start=" + userId)); }
-function claimChannelBonus(id, url) { window.open(url, '_blank'); }
-window.onload = loadAllData;
-</script>
-</body>
-                                                                 </html>
+function claimChannelBonus(id, url) { window.open(url, '_bl
