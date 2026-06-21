@@ -70,8 +70,8 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; ma
         
         <button id="btn-watch" class="btn-action" style="background: #ef4444; padding: 18px; border-radius: 18px;" onclick="watchRealAd()">বিজ্ঞাপন দেখুন</button>
         
-        <!-- টাইমার সেকশন -->
-        <div id="timer-box" style="display:none; margin-top:15px; font-weight:bold; color:#ef4444;">
+        <!-- নতুন টাইমার বক্স -->
+        <div id="timer-box" style="display:none; margin-top:15px; padding:10px; background:#fee2e2; border-radius:10px; color:#b91c1c; font-weight:bold;">
             পরবর্তী ভিডিওর জন্য সময়: <span id="countdown">00:00:00</span>
         </div>
     </div>
@@ -123,8 +123,8 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; ma
         <input type="number" class="input-field" id="withdraw-number" placeholder="আপনার বিকাশ/নগদ নাম্বার লিখুন">
         <input type="number" class="input-field" id="withdraw-amount" placeholder="কয়েনের পরিমাণ লিখুন" oninput="calculateMoney()">
         
-        <!-- লাইভ ক্যালকুলেশন বক্স (শর্তসাপেক্ষে দৃশ্যমান) -->
-        <div id="calc-result" style="display:none; margin: 10px 0; padding: 10px; background: #e0f2fe; border-radius: 10px; font-weight: bold; color: #0369a1;">
+        <!-- ক্যালকুলেশন বক্স -->
+        <div id="calc-result" style="display:none; margin-top:10px; padding:10px; background:#e0f2fe; border-radius:10px; font-weight:bold; color:#0369a1;">
             আপনি পাবেন: <span id="money-display">০</span> টাকা
         </div>
         
@@ -176,37 +176,12 @@ async function loadAllData() {
     }
     document.getElementById('refer-link').innerText = "https://t.me/TakaInkam1626_bot?start=" + userId;
     
-    // টাইমার চেক
+    // টাইমার চেক: ৫০ ভিডিও হলে টাইমার চালু হবে
     if(totalWatched >= 50) startTimer();
     
     updateUI();
     loadReferralsList();
     loadPaymentHistory();
-}
-
-function startTimer() {
-    document.getElementById('btn-watch').style.display = 'none';
-    document.getElementById('timer-box').style.display = 'block';
-    let duration = 3600; // ১ ঘণ্টা (আপনার পছন্দমতো সময় দিন)
-    const display = document.getElementById('countdown');
-    const timer = setInterval(() => {
-        let m = Math.floor(duration / 60);
-        let s = duration % 60;
-        display.innerText = m + " মিনিট " + s + " সেকেন্ড";
-        if (--duration < 0) { clearInterval(timer); location.reload(); }
-    }, 1000);
-}
-
-function calculateMoney() {
-    const amount = parseFloat(document.getElementById("withdraw-amount").value);
-    const moneyDisplay = document.getElementById("money-display");
-    // শর্ত: ১১ রেফার এবং একাউন্ট অ্যাক্টিভ হলে ক্যালকুলেশন দেখাবে
-    if (isActive && totalRefers >= 11 && amount >= 500) {
-        document.getElementById("calc-result").style.display = 'block';
-        moneyDisplay.innerText = amount / 50; 
-    } else {
-        document.getElementById("calc-result").style.display = 'none';
-    }
 }
 
 async function saveAllData() {
@@ -227,6 +202,31 @@ function updateUI() {
     document.getElementById('dash-watched').innerText = totalWatched;
     document.getElementById('dash-remaining').innerText = (50 - totalWatched);
     if(document.getElementById('progress-bar')) document.getElementById('progress-bar').style.width = (totalWatched / 50 * 100) + "%";
+}
+
+// নতুন ক্যালকুলেশন ফাংশন
+function calculateMoney() {
+    const amount = parseFloat(document.getElementById("withdraw-amount").value);
+    const calcBox = document.getElementById("calc-result");
+    if(isActive && totalRefers >= 11 && amount >= 500) {
+        calcBox.style.display = 'block';
+        document.getElementById("money-display").innerText = (amount / 50).toFixed(2);
+    } else {
+        calcBox.style.display = 'none';
+    }
+}
+
+// নতুন টাইমার ফাংশন
+function startTimer() {
+    document.getElementById('btn-watch').style.display = 'none';
+    document.getElementById('timer-box').style.display = 'block';
+    let time = 3600; // ১ ঘণ্টা
+    const timer = setInterval(() => {
+        let m = Math.floor(time / 60);
+        let s = time % 60;
+        document.getElementById('countdown').innerText = m + " মিনিট " + s + " সেকেন্ড";
+        if (--time < 0) { clearInterval(timer); location.reload(); }
+    }, 1000);
 }
 
 function loadReferralsList() {
@@ -281,6 +281,7 @@ async function watchRealAd() {
             userBalance += 10; totalTasks++; totalWatched++;
             saveAllData(); updateUI();
             tg.showAlert("🎉 ১০ কয়েন যোগ হয়েছে!");
+            if(totalWatched >= 50) startTimer();
         });
     }
 }
@@ -335,4 +336,5 @@ function switchPage(id, el) {
 }
 function copyRefer() { navigator.clipboard.writeText("https://t.me/TakaInkam1626_bot?start=" + userId); tg.showAlert("লিংক কপি হয়েছে!"); }
 function shareRefer() { tg.openTelegramLink("https://t.me/share/url?url=" + encodeURIComponent("https://t.me/TakaInkam1626_bot?start=" + userId)); }
-function claimChannelBonus(id, url) { window.open(url, '_bl
+function claimChannelBonus(id, url) { window.open(url, '_blank'); }
+window.
