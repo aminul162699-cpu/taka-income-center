@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+।<!DOCTYPE html>
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -46,7 +46,7 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; ma
 <div id="page-home" class="page active">
     <div class="balance-card"><div class="balance-title">মোট কয়েন</div><div class="balance-amount"><span id="main-balance">0</span> কয়েন</div></div>
     <div class="notice-bar"><span class="marquee-text">🎉 পেমেন্ট আপডেট লোড হচ্ছে...</span></div>
-    <div class="info-notice-box">📢 প্রতি ভিডিও ১০ কয়েন</div>
+    <div class="info-notice-box">📢 প্রতি ভিডিও ২০ কয়েন</div>
     <div class="grid-container">
         <div class="stat-card"><div class="stat-title">⚡ মোট টাস্ক</div><div class="stat-value" id="dash-task">0</div></div>
         <div class="stat-card"><div class="stat-title">👥 মোট রেফার</div><div class="stat-value" id="dash-refer">0</div></div>
@@ -64,7 +64,7 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; ma
 <div id="page-work" class="page" style="padding: 10px;">
     <div class="card" style="background: #ffffff; padding: 25px; border-radius: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; border: 1px solid #f0f0f8;">
         <h3 style="margin-top: 0;">📺 বিজ্ঞাপন দেখুন</h3>
-        <p>প্রতিটি বিজ্ঞাপন দেখে ১০ কয়েন ইনকাম করুন</p>
+        <p>প্রতিটি বিজ্ঞাপন দেখে ২০ কয়েন ইনকাম করুন</p>
         <div style="text-align: left; font-size: 14px; font-weight: bold; margin-bottom: 10px;">আজকের সম্পন্ন <span style="float: right;" id="task-count">0</span> / 50</div>
         <div style="background: #e2e8f0; height: 12px; border-radius: 10px; margin-bottom: 25px; overflow: hidden;"><div id="progress-bar" style="background: #6366f1; height: 100%; width: 0%; border-radius: 10px;"></div></div>
         <button class="btn-action" style="background: #ef4444; padding: 18px; border-radius: 18px;" onclick="watchRealAd()">বিজ্ঞাপন দেখুন</button>
@@ -111,7 +111,7 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; ma
         <h3>💳 রিডিম (Redeem)</h3>
         <p style="font-weight:bold; color:#475569;">ইউজার আইডি: <span id="display-user-id"></span></p>
         <p>আপনার ব্যালেন্স: <b style="color: #2563eb;"><span id="wallet-balance">0</span> কয়েন</b></p>
-        <p style="font-size: 13px; color: #ef4444; font-weight: bold;">নোট: ন্যূনতম ৫০০ কয়েন হলে উত্তোলন করতে পারবেন।</p>
+        <p style="font-size: 13px; color: #ef4444; font-weight: bold;">নোট: ৫০০ কয়েন = ১০ টাকা, ১০০০ কয়েন = ২০ টাকা।</p>
         <label align="left" style="display:block; font-weight:bold; font-size: 14px;">পেমেন্ট মেথড:</label>
         <select class="input-field" id="payment-method"><option value="bkash">বিকাশ (bKash)</option><option value="nagad">নগদ (Nagad)</option></select>
         <input type="number" class="input-field" id="withdraw-number" placeholder="আপনার বিকাশ/নগদ নাম্বার লিখুন">
@@ -136,20 +136,19 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; ma
 
 <script>
 const firebaseConfig = {
-apiKey: "AizaSyCgOILqhT8ZXHZ--VZvKw3TdU2HB2RNWkw",
-authDomain: "takaincome-326cf.firebaseapp.com",
-projectId: "takaincome-326cf",
-storageBucket: "takaincome-326cf.appspot.com",
-messagingSenderId: "27644737509",
-appId: "1:27644737509:web:bbad28493df31a8646a10c",
-measurementId: "G-V356Y69BK8"
+    apiKey: "AizaSyCgOILqhT8ZXHZ--VZvKw3TdU2HB2RNWkw",
+    authDomain: "takaincome-326cf.firebaseapp.com",
+    projectId: "takaincome-326cf",
+    storageBucket: "takaincome-326cf.appspot.com",
+    messagingSenderId: "27644737509",
+    appId: "1:27644737509:web:bbad28493df31a8646a10c"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const tg = window.Telegram.WebApp;
 tg.ready(); tg.expand();
 const userId = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id.toString() : "guest";
-let userBalance = 0, totalTasks = 0, totalRefers = 0, totalWatched = 0, isActive = false;
+let userBalance = 0, totalTasks = 0, totalRefers = 0, totalWatched = 0, isActive = false, lastWatchedDate = "";
 
 async function loadAllData() {
     const userRef = db.collection('users').doc(userId);
@@ -161,16 +160,27 @@ async function loadAllData() {
         totalRefers = data.refers || 0;
         totalWatched = data.totalWatched || 0;
         isActive = data.is_active || false;
+        lastWatchedDate = data.lastWatchedDate || "";
     }
     document.getElementById('refer-link').innerText = "https://t.me/TakaInkam1626_bot?start=" + userId;
+    await checkAndResetDailyLimit();
     updateUI();
     loadReferralsList();
     loadPaymentHistory();
 }
 
+async function checkAndResetDailyLimit() {
+    const today = new Date().toLocaleDateString();
+    if (lastWatchedDate !== today) {
+        totalWatched = 0;
+        lastWatchedDate = today;
+        await saveAllData();
+    }
+}
+
 async function saveAllData() {
     await db.collection('users').doc(userId).set({ 
-        balance: userBalance, tasks: totalTasks, refers: totalRefers, totalWatched: totalWatched 
+        balance: userBalance, tasks: totalTasks, refers: totalRefers, totalWatched: totalWatched, lastWatchedDate: lastWatchedDate 
     }, { merge: true });
 }
 
@@ -188,14 +198,57 @@ function updateUI() {
     if(document.getElementById('progress-bar')) document.getElementById('progress-bar').style.width = (totalWatched / 50 * 100) + "%";
 }
 
+async function watchRealAd() {
+    await checkAndResetDailyLimit();
+    if(totalWatched >= 50) { tg.showAlert("আজকের লিমিট শেষ! আগামীকাল আবার নতুন ভিডিও দেখার সুযোগ পাবেন। ⏳"); return; }
+    if (typeof show_11149595 === 'function') {
+        show_11149595().then(async () => {
+            userBalance += 20; totalTasks++; totalWatched++;
+            await saveAllData(); updateUI();
+            tg.showAlert("🎉 ২০ কয়েন যোগ হয়েছে!");
+        });
+    }
+}
+
+async function processWithdraw() {
+    const amount = parseFloat(document.getElementById("withdraw-amount").value);
+    const number = document.getElementById("withdraw-number").value;
+    const method = document.getElementById("payment-method").value;
+    const supportLink = "https://t.me/ks162699bot"; 
+    const payoutAmount = amount / 50; 
+    
+    if (!number || !amount) { tg.showAlert("সব তথ্য পূরণ করুন।"); return; }
+    if (amount < 500) { tg.showAlert("ন্যূনতম ৫০০ কয়েন প্রয়োজন!"); return; }
+    if (amount > userBalance) { tg.showAlert("পর্যাপ্ত ব্যালেন্স নেই!"); return; }
+    if (totalRefers < 11) { tg.showAlert("⚠️ রিডিম করতে ১১টি রেফার প্রয়োজন। বর্তমান রেফার: " + totalRefers + "টি।"); return; }
+    
+    if (isActive === true) {
+        await db.collection('withdraw_requests').add({
+            userId: userId, number: number, amount: amount, payout: payoutAmount, method: method, status: "pending", time: new Date()
+        });
+        userBalance -= amount;
+        await saveAllData(); updateUI(); loadPaymentHistory();
+        tg.showAlert("🎉 সফল! আপনার " + payoutAmount + " টাকা ( " + amount + " কয়েন) পেমেন্ট রিকোয়েস্ট জমা হয়েছে।");
+        return;
+    }
+    
+    tg.showPopup({
+        title: '🎉 আপনার অ্যাকাউন্টটি ভেরিফাই করুন!',
+        message: 'অভিনন্দন! আপনার ১১টি রেফার সফল হয়েছে। এখন শুধু আপনার অ্যাকাউন্টটি অ্যাক্টিভ করার পালা।\n\nকেন অ্যাকাউন্ট অ্যাক্টিভ করবেন?\n🔹 লাইফটাইম পেমেন্ট গ্যারান্টি (১০০% নিরাপদ)।\n🔹 যেকোনো সময় আনলিমিটেড উইথড্র করার সুবিধা।\n🔹 প্রিমিয়াম ইউজার হিসেবে ফাস্ট পেমেন্ট সাপোর্ট।\n\nবিনিময়ে মাত্র ১১১ টাকা দিয়ে আজই মেম্বারশিপ নিন এবং নিয়মিত আয় করুন।\n\nঅ্যাক্টিভ করতে নিচের লিংকে যোগাযোগ করুন:',
+        buttons: [
+            {id: 'support', type: 'default', text: 'অ্যাক্টিভ করতে এখানে ক্লিক করুন'}, 
+            {type: 'cancel', text: 'পরে করব'}
+        ]
+    }, (buttonId) => { 
+        if (buttonId === 'support') { tg.openTelegramLink(supportLink); } 
+    });
+}
+
 function loadReferralsList() {
     const listContainer = document.getElementById('referrals-list-container');
     if (!listContainer) return;
     listContainer.innerHTML = '';
-    if (totalRefers <= 0) {
-        listContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b; font-weight:bold;">এখনো কোনো রেফার করা হয়নি</div>';
-        return;
-    }
+    if (totalRefers <= 0) { listContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b; font-weight:bold;">এখনো কোনো রেফার করা হয়নি</div>'; return; }
     for (let i = 1; i <= totalRefers; i++) {
         const card = document.createElement('div');
         card.className = 'list-card';
@@ -206,83 +259,16 @@ function loadReferralsList() {
 
 async function loadPaymentHistory() {
     const listContainer = document.getElementById('payment-history-list');
-    const querySnapshot = await db.collection('withdraw_requests')
-        .where('userId', '==', userId)
-        .orderBy('time', 'desc')
-        .get();
-
-    if (querySnapshot.empty) {
-        listContainer.innerHTML = '<p style="text-align:center;">কোনো রিকোয়েস্ট নেই।</p>';
-        return;
-    }
-
+    const querySnapshot = await db.collection('withdraw_requests').where('userId', '==', userId).orderBy('time', 'desc').get();
+    if (querySnapshot.empty) { listContainer.innerHTML = '<p style="text-align:center;">কোনো রিকোয়েস্ট নেই।</p>'; return; }
     listContainer.innerHTML = '';
     querySnapshot.forEach((doc, index) => {
         const data = doc.data();
-        const statusColor = data.status === 'paid' ? '#10b981' : '#f59e0b';
         const statusText = data.status === 'paid' ? 'সম্পন্ন' : 'পেন্ডিং';
         const item = document.createElement('div');
-        item.style.padding = "10px 0";
-        item.style.borderBottom = "1px solid #f1f5f9";
-        item.innerHTML = `
-            <div style="font-size:14px; font-weight:bold;">${index + 1}. ${data.method.toUpperCase()} - ${data.amount} কয়েন</div>
-            <div style="font-size:12px; color:#64748b;">নাম্বার: ${data.number}</div>
-            <div style="font-size:12px; color:${statusColor}; font-weight:bold;">স্ট্যাটাস: ${statusText}</div>
-        `;
+        item.style.padding = "10px 0"; item.style.borderBottom = "1px solid #f1f5f9";
+        item.innerHTML = `<div style="font-size:14px; font-weight:bold;">${index + 1}. ${data.method.toUpperCase()} - ${data.payout} টাকা (${data.amount} কয়েন)</div><div style="font-size:12px; color:#64748b;">নাম্বার: ${data.number}</div><div style="font-size:12px; color:${data.status === 'paid' ? '#10b981' : '#f59e0b'}; font-weight:bold;">স্ট্যাটাস: ${statusText}</div>`;
         listContainer.appendChild(item);
-    });
-}
-
-async function watchRealAd() {
-    if(totalWatched >= 50) { tg.showAlert("আজকের লিমিট শেষ!"); return; }
-    if (typeof show_11149595 === 'function') {
-        show_11149595().then(() => {
-            userBalance += 10; totalTasks++; totalWatched++;
-            saveAllData(); updateUI();
-            tg.showAlert("🎉 ১০ কয়েন যোগ হয়েছে!");
-        });
-    }
-}
-
-async function processWithdraw() {
-    const amount = parseFloat(document.getElementById("withdraw-amount").value);
-    const number = document.getElementById("withdraw-number").value;
-    const method = document.getElementById("payment-method").value;
-    const supportLink = "https://t.me/ks162699bot"; 
-    
-    if (!number || !amount) { tg.showAlert("সব তথ্য পূরণ করুন।"); return; }
-    if (amount < 500) { tg.showAlert("ন্যূনতম ৫০০ কয়েন প্রয়োজন!"); return; }
-    if (amount > userBalance) { tg.showAlert("পর্যাপ্ত ব্যালেন্স নেই!"); return; }
-    
-    if (totalRefers < 11) { 
-        tg.showAlert("⚠️ রিডিম করতে ১১টি রেফার প্রয়োজন। বর্তমান রেফার: " + totalRefers + "টি।"); 
-        return; 
-    }
-    
-    if (isActive === true) {
-        await db.collection('withdraw_requests').add({
-            userId: userId,
-            number: number,
-            amount: amount,
-            method: method,
-            status: "pending",
-            time: new Date()
-        });
-        
-        userBalance -= amount;
-        await saveAllData();
-        updateUI();
-        loadPaymentHistory();
-        tg.showAlert("🎉 আপনার পেমেন্ট অনুরোধ সফলভাবে জমা হয়েছে!");
-        return;
-    }
-    
-    tg.showPopup({
-        title: 'পেমেন্ট রিকোয়েস্ট',
-        message: 'আপনার ১১টি রেফার পূরণ হয়েছে। পেমেন্ট রিকোয়েস্ট পাঠানোর আগে ১১১ টাকা ফি দিয়ে অ্যাকাউন্টটি অ্যাক্টিভ করুন।',
-        buttons: [{id: 'support', type: 'default', text: 'অ্যাক্টিভ করতে যোগাযোগ করুন'}, {type: 'cancel', text: 'বাতিল'}]
-    }, (buttonId) => { 
-        if (buttonId === 'support') { tg.openTelegramLink(supportLink); } 
     });
 }
 
@@ -298,5 +284,4 @@ function claimChannelBonus(id, url) { window.open(url, '_blank'); }
 window.onload = loadAllData;
 </script>
 </body>
-    </html>
-    
+</html>
