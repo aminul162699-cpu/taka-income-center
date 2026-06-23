@@ -213,24 +213,25 @@ async function loadPaymentHistory() {
         .where('userId', '==', userId)
         .orderBy('time', 'desc')
         .get();
+    
     if (querySnapshot.empty) {
         listContainer.innerHTML = '<p style="text-align:center;">কোনো রিকোয়েস্ট নেই।</p>';
         return;
     }
+    
     listContainer.innerHTML = '';
     querySnapshot.forEach((doc, index) => {
         const data = doc.data();
-        // স্ট্যাটাস লজিক এখানে ঠিক করা হয়েছে
-        const isPaid = (data.status === 'paid' || data.status === 'success' || data.status === 'সম্পন্ন');
-        const statusColor = isPaid ? '#10b981' : '#f59e0b';
-        const statusText = isPaid ? 'সম্পন্ন' : 'পেন্ডিং';
+        const statusText = (data.status === 'paid') ? 'স্ট্যাটাস: সম্পন্ন' : 'স্ট্যাটাস: পেন্ডিং';
+        const statusColor = (data.status === 'paid') ? '#10b981' : '#f59e0b';
+        
         const item = document.createElement('div');
         item.style.padding = "10px 0";
         item.style.borderBottom = "1px solid #f1f5f9";
         item.innerHTML = `
             <div style="font-size:14px; font-weight:bold;">${index + 1}. ${data.method.toUpperCase()} - ${data.amount} কয়েন</div>
             <div style="font-size:12px; color:#64748b;">নাম্বার: ${data.number}</div>
-            <div style="font-size:12px; color:${statusColor}; font-weight:bold;">স্ট্যাটাস: ${statusText}</div>
+            <div style="font-size:12px; color:${statusColor}; font-weight:bold;">${statusText}</div>
         `;
         listContainer.appendChild(item);
     });
@@ -319,4 +320,7 @@ function switchPage(id, el) {
 function copyRefer() { navigator.clipboard.writeText("https://t.me/TakaInkam1626_bot?start=" + userId); tg.showAlert("লিংক কপি হয়েছে!"); }
 function shareRefer() { tg.openTelegramLink("https://t.me/share/url?url=" + encodeURIComponent("https://t.me/TakaInkam1626_bot?start=" + userId)); }
 function claimChannelBonus(id, url) { window.open(url, '_blank'); }
-window.onl
+window.onload = loadAllData;
+</script>
+</body>
+</html>
