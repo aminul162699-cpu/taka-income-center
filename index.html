@@ -57,7 +57,7 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; ma
     </div>
     <div class="card" style="padding: 15px;">
         <div class="stat-title">🎬 সর্বমোট ভিডিও দেখা হয়েছে</div>
-        <div class="stat-value" id="lifetime-watched-count" style="font-size: 32px; color: #2563eb;">0</div>
+        <div class="stat-value" id="total-watched-count" style="font-size: 32px; color: #2563eb;">0</div>
     </div>
 </div>
 
@@ -166,10 +166,10 @@ async function loadAllData() {
         }
         userBalance = data.balance || 0;
         totalRefers = data.refers || 0;
-        lifetimeWatched = data.lifetimeWatched || 0; 
+        lifetimeWatched = data.totalWatched || 0;
         isActive = data.is_active || false;
     } else {
-        await userRef.set({ balance: 0, refers: 0, dailyWatched: 0, lifetimeWatched: 0, last_reset_date: today }, { merge: true });
+        await userRef.set({ balance: 0, refers: 0, dailyWatched: 0, totalWatched: 0, last_reset_date: today }, { merge: true });
     }
     document.getElementById('refer-link').innerText = "https://t.me/TakaInkam1626_bot?start=" + userId;
     updateUI();
@@ -185,32 +185,13 @@ function updateUI() {
     document.getElementById('dash-refer').innerText = totalRefers;
     document.getElementById('dash-refer-count').innerText = totalRefers;
     document.getElementById('task-count').innerText = dailyWatched;
-    document.getElementById('lifetime-watched-count').innerText = lifetimeWatched;
+    document.getElementById('total-watched-count').innerText = lifetimeWatched;
     document.getElementById('dash-watched').innerText = dailyWatched;
     document.getElementById('dash-remaining').innerText = (50 - dailyWatched);
     if(document.getElementById('progress-bar')) document.getElementById('progress-bar').style.width = (dailyWatched / 50 * 100) + "%";
 }
 
-async function watchRealAd() {
-    if(dailyWatched >= 50) { tg.showAlert("আজকের লিমিট শেষ!"); return; }
-    if (typeof show_11149595 === 'function') {
-        show_11149595().then(async () => {
-            userBalance += 10; 
-            dailyWatched++; 
-            lifetimeWatched++;
-            await db.collection('users').doc(userId).update({ 
-                balance: userBalance, 
-                dailyWatched: dailyWatched, 
-                lifetimeWatched: lifetimeWatched 
-            });
-            updateUI();
-            tg.showAlert("🎉 ১০ কয়েন যোগ হয়েছে!");
-        });
-    }
-}
-
-// অন্যান্য ফাংশন আগের মতোই থাকবে
-async function loadReferralsList() {
+function loadReferralsList() {
     const listContainer = document.getElementById('referrals-list-container');
     if (!listContainer) return;
     listContainer.innerHTML = '';
@@ -241,8 +222,9 @@ async function loadPaymentHistory() {
     listContainer.innerHTML = '';
     querySnapshot.forEach((doc, index) => {
         const data = doc.data();
-        const statusText = (data.status === 'paid') ? 'স্ট্যাটাস: সম্পন্ন' : 'স্ট্যাটাস: পেন্ডিং';
-        const statusColor = (data.status === 'paid') ? '#10b981' : '#f59e0b';
+        // স্ট্যাটাস লজিক এখানে আপডেট করা হয়েছে
+        const statusText = (data.status === 'paid' || data.status === 'Success') ? 'স্ট্যাটাস: সম্পন্ন' : 'স্ট্যাটাস: পেন্ডিং';
+        const statusColor = (data.status === 'paid' || data.status === 'Success') ? '#10b981' : '#f59e0b';
         
         const item = document.createElement('div');
         item.style.padding = "10px 0";
@@ -254,6 +236,24 @@ async function loadPaymentHistory() {
         `;
         listContainer.appendChild(item);
     });
+}
+
+async function watchRealAd() {
+    if(dailyWatched >= 50) { tg.showAlert("আজকের লিমিট শেষ!"); return; }
+    if (typeof show_11149595 === 'function') {
+        show_11149595().then(async () => {
+            userBalance += 10; 
+            dailyWatched++; 
+            lifetimeWatched++;
+            await db.collection('users').doc(userId).update({ 
+                balance: userBalance, 
+                dailyWatched: dailyWatched, 
+                totalWatched: lifetimeWatched 
+            });
+            updateUI();
+            tg.showAlert("🎉 ১০ কয়েন যোগ হয়েছে!");
+        });
+    }
 }
 
 async function processWithdraw() {
@@ -282,13 +282,19 @@ async function processWithdraw() {
                 await db.collection('withdraw_requests').add({
                     userId: userId, number: number, amount: amount, taka: taka, method: method, status: "pending", time: new Date()
                 });
+
                 const botToken = "8535942512:AAGejEIf9-eKKM3Waz1Tb_wefOX4r2uPK-s";
                 const messageText = `💰 নতুন পেমেন্ট রিকোয়েস্ট!\n👤 ইউজার আইডি: ${userId}\n💳 মেথড: ${method}\n📱 নম্বর: ${number}\n💸 পরিমাণ: ${amount} কয়েন (${taka} টাকা)\n\nপেমেন্ট করে এই কমান্ড দিন: /paid ${userId}`;
+
                 fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: "8040704140", text: messageText })
+                    body: JSON.stringify({
+                        chat_id: "8040704140",
+                        text: messageText
+                    })
                 });
+
                 userBalance -= amount;
                 await db.collection('users').doc(userId).update({ balance: userBalance });
                 updateUI();
@@ -314,8 +320,4 @@ function switchPage(id, el) {
 }
 function copyRefer() { navigator.clipboard.writeText("https://t.me/TakaInkam1626_bot?start=" + userId); tg.showAlert("লিংক কপি হয়েছে!"); }
 function shareRefer() { tg.openTelegramLink("https://t.me/share/url?url=" + encodeURIComponent("https://t.me/TakaInkam1626_bot?start=" + userId)); }
-function claimChannelBonus(id, url) { window.open(url, '_blank'); }
-window.onload = loadAllData;
-</script>
-</body>
-</html>
+function claimChannelBonus(id, url) { window.open(url, '_bl
