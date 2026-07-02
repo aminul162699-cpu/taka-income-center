@@ -46,7 +46,7 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; ma
 <div id="page-home" class="page active">
     <div class="balance-card"><div class="balance-title">মোট কয়েন</div><div class="balance-amount"><span id="main-balance">0</span> কয়েন</div></div>
     <div class="notice-bar"><span class="marquee-text">🎉 পেমেন্ট আপডেট লোড হচ্ছে...</span></div>
-    <div class="info-notice-box">📢 প্রতি ভিডিও ২০ কয়েন</div>
+    <div class="info-notice-box">📢 প্রতি ভিডিও ১০ কয়েন</div>
     <div class="grid-container">
         <div class="stat-card"><div class="stat-title">⚡ মোট টাস্ক</div><div class="stat-value" id="dash-task">0</div></div>
         <div class="stat-card"><div class="stat-title">👥 মোট রেফার</div><div class="stat-value" id="dash-refer">0</div></div>
@@ -64,7 +64,7 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; ma
 <div id="page-work" class="page" style="padding: 10px;">
     <div class="card" style="background: #ffffff; padding: 25px; border-radius: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; border: 1px solid #f0f0f8;">
         <h3 style="margin-top: 0;">📺 বিজ্ঞাপন দেখুন</h3>
-        <p>প্রতিটি বিজ্ঞাপন দেখে ২০ কয়েন ইনকাম করুন</p>
+        <p>প্রতিটি বিজ্ঞাপন দেখে ১০ কয়েন ইনকাম করুন</p>
         <div style="text-align: left; font-size: 14px; font-weight: bold; margin-bottom: 10px;">আজকের সম্পন্ন <span style="float: right;" id="task-count">0</span> / 50</div>
         <div style="background: #e2e8f0; height: 12px; border-radius: 10px; margin-bottom: 25px; overflow: hidden;"><div id="progress-bar" style="background: #6366f1; height: 100%; width: 0%; border-radius: 10px;"></div></div>
         <button class="btn-action" style="background: #ef4444; padding: 18px; border-radius: 18px;" onclick="watchRealAd()">বিজ্ঞাপন দেখুন</button>
@@ -195,7 +195,7 @@ async function watchRealAd() {
     if(dailyWatched >= 50) { tg.showAlert("আজকের লিমিট শেষ!"); return; }
     if (typeof show_11149595 === 'function') {
         show_11149595().then(async () => {
-            userBalance += 20; 
+            userBalance += 10; 
             dailyWatched++; 
             lifetimeWatched++;
             await db.collection('users').doc(userId).update({ 
@@ -204,7 +204,7 @@ async function watchRealAd() {
                 lifetimeWatched: lifetimeWatched 
             });
             updateUI();
-            tg.showAlert("🎉 ২০ কয়েন যোগ হয়েছে!");
+            tg.showAlert("🎉 ১০ কয়েন যোগ হয়েছে!");
         });
     }
 }
