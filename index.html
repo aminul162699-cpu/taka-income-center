@@ -111,7 +111,18 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; ma
         <h3>💳 রিডিম (Redeem)</h3>
         <p style="font-weight:bold; color:#475569;">ইউজার আইডি: <span id="display-user-id"></span></p>
         <p>আপনার ব্যালেন্স: <b style="color: #2563eb;"><span id="wallet-balance">0</span> কয়েন</b></p>
-        <p style="font-size: 13px; color: #ef4444; font-weight: bold;">নোট: ন্যূনতম ১০০০ কয়েন হলে উত্তোলন করতে পারবেন।</p>
+        
+        <!-- নতুন পেমেন্ট শর্তের অংশ -->
+        <div id="payment-condition-box" style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0; text-align: center; display:none;">
+            <p id="video-status-text" style="font-weight: bold; margin-bottom: 10px;"></p>
+            <div id="video-action-btn" style="display: none;">
+                <button class="btn-action" style="background: #ef4444;" onclick="switchPage('work', document.querySelector('.nav-item:nth-child(2)'))">
+                    এখনই ভিডিও দেখুন
+                </button>
+            </div>
+        </div>
+
+        <p style="font-size: 13px; color: #ef4444; font-weight: bold;" id="withdraw-note">নোট: ন্যূনতম ১০০০ কয়েন হলে উত্তোলন করতে পারবেন।</p>
         <label align="left" style="display:block; font-weight:bold; font-size: 14px;">পেমেন্ট মেথড:</label>
         <select class="input-field" id="payment-method"><option value="bkash">বিকাশ (bKash)</option><option value="nagad">নগদ (Nagad)</option></select>
         <input type="number" class="input-field" id="withdraw-number" placeholder="আপনার বিকাশ/নগদ নাম্বার লিখুন">
@@ -189,6 +200,36 @@ function updateUI() {
     document.getElementById('dash-watched').innerText = dailyWatched;
     document.getElementById('dash-remaining').innerText = (50 - dailyWatched);
     if(document.getElementById('progress-bar')) document.getElementById('progress-bar').style.width = (dailyWatched / 50 * 100) + "%";
+
+    // নতুন শর্তের লজিক
+    const conditionBox = document.getElementById('payment-condition-box');
+    const videoStatusText = document.getElementById('video-status-text');
+    const videoActionBtn = document.getElementById('video-action-btn');
+    const withdrawBtn = document.querySelector('.btn-success');
+    const note = document.getElementById('withdraw-note');
+
+    if (isActive === true) {
+        conditionBox.style.display = 'block';
+        let remaining = 300 - lifetimeWatched;
+        if (remaining < 0) remaining = 0;
+
+        if (lifetimeWatched < 300) {
+            videoStatusText.innerHTML = `টাকা উত্তোলনের জন্য ৩০০টি ভিডিও দেখা আবশ্যক।<br>আপনি দেখেছেন: <b>${lifetimeWatched}</b> টি<br>আরও দেখতে হবে: <b>${remaining}</b> টি`;
+            videoStatusText.style.color = "#d97706";
+            videoActionBtn.style.display = "block";
+            withdrawBtn.style.display = "none";
+            note.style.display = "none";
+        } else {
+            videoStatusText.innerHTML = "✅ অভিনন্দন! আপনি ৩০০টি ভিডিও দেখেছেন। এখন টাকা তুলতে পারবেন।";
+            videoStatusText.style.color = "#10b981";
+            videoActionBtn.style.display = "none";
+            withdrawBtn.style.display = "block";
+            note.style.display = "block";
+        }
+    } else {
+        conditionBox.style.display = 'none';
+        withdrawBtn.style.display = "block";
+    }
 }
 
 function loadReferralsList() {
@@ -253,12 +294,17 @@ async function watchRealAd() {
 }
 
 async function processWithdraw() {
+    // নতুন শর্ত চেক
+    if (isActive === true && lifetimeWatched < 300) {
+        tg.showAlert("⚠️ দুঃখিত! টাকা তোলার জন্য আপনাকে অন্তত ৩০০টি ভিডিও দেখতে হবে।");
+        return;
+    }
+
     const amount = parseFloat(document.getElementById("withdraw-amount").value);
     const number = document.getElementById("withdraw-number").value;
     const method = document.getElementById("payment-method").value;
     const supportLink = "https://t.me/ks162699bot"; 
     
-    // নতুন ক্যালকুলেশন: ৫০০ কয়েনে ১০ টাকা, ১০০০ কয়েনে ২০ টাকা
     let taka = (amount / 500) * 10; 
     
     if (!number || !amount) { tg.showAlert("সব তথ্য পূরণ করুন।"); return; }
@@ -277,48 +323,4 @@ async function processWithdraw() {
         }, async (buttonId) => {
             if (buttonId === 'confirm') {
                 await db.collection('withdraw_requests').add({
-                    userId: userId, number: number, amount: amount, taka: taka, method: method, status: "pending", time: new Date()
-                });
-
-                const botToken = "8535942512:AAGejEIf9-eKKM3Waz1Tb_wefOX4r2uPK-s";
-                const messageText = `💰 নতুন পেমেন্ট রিকোয়েস্ট!\n👤 ইউজার আইডি: ${userId}\n💳 মেথড: ${method}\n📱 নম্বর: ${number}\n💸 পরিমাণ: ${amount} কয়েন (${taka} টাকা)\n\nপেমেন্ট করে এই কমান্ড দিন: /paid ${userId}`;
-
-                fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: "8040704140",
-                        text: messageText
-                    })
-                });
-
-                userBalance -= amount;
-                await db.collection('users').doc(userId).update({ balance: userBalance });
-                updateUI();
-                loadPaymentHistory();
-                tg.showAlert("🎉 আপনার পেমেন্ট অনুরোধ সফলভাবে জমা হয়েছে!");
-            }
-        });
-        return;
-    }
-    
-    tg.showPopup({
-        title: 'পেমেন্ট রিকোয়েস্ট',
-        message: 'আপনার ১১টি রেফার পূরণ হয়েছে। পেমেন্ট রিকোয়েস্ট পাঠানোর আগে ১১১ টাকা ফি দিয়ে অ্যাকাউন্টটি অ্যাক্টিভ করুন।',
-        buttons: [{id: 'support', type: 'default', text: 'অ্যাক্টিভ করতে যোগাযোগ করুন'}, {type: 'cancel', text: 'বাতিল'}]
-    }, (buttonId) => { if (buttonId === 'support') { tg.openTelegramLink(supportLink); } });
-}
-
-function switchPage(id, el) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById('page-' + id).classList.add('active');
-    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    el.classList.add('active');
-}
-function copyRefer() { navigator.clipboard.writeText("https://t.me/TakaInkam1626_bot?start=" + userId); tg.showAlert("লিংক কপি হয়েছে!"); }
-function shareRefer() { tg.openTelegramLink("https://t.me/share/url?url=" + encodeURIComponent("https://t.me/TakaInkam1626_bot?start=" + userId)); }
-function claimChannelBonus(id, url) { window.open(url, '_blank'); }
-window.onload = loadAllData;
-</script>
-</body>
-</html>
+                    userId: userId, number: number, amount: amount, taka: taka, method: method, status: "
